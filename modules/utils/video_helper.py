@@ -282,7 +282,7 @@ def get_frames_from_dir(vid_dir: str,
         return []
     frame_names.sort(key=lambda x: int(os.path.splitext(x)[0]))
 
-    frames = [os.path.join(vid_dir, name) for name in frame_names]
+    frames = [os.path.normpath(os.path.join(vid_dir, name)) for name in frame_names]
     if as_numpy:
         frames = [np.array(Image.open(frame)) for frame in frames]
 
