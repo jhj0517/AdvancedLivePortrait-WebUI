@@ -65,7 +65,7 @@ class App:
         if vid_input is None or not vid_input:
             return [
                 gr.Slider(label=_("Frame Selector"), value=0, interactive=False, visible=False),
-                gr.Gallery(show_label=False, rows=1, visible=False, scale=0),
+                gr.Gallery(show_label=False, rows=1, scale=0),
                 gr.Image(label=_("Edited Frame")),
             ]
         frames_dir = os.path.join(self.args.output_dir, "temp", "video_frames")
@@ -76,8 +76,7 @@ class App:
         return [
             gr.Slider(label=_("Frame Selector"), value=0, minimum=0, maximum=len(frames)-1, interactive=True, scale=0),
             gr.Gallery(show_label=False, columns=len(frames), value=[[f, f"{i}"] for i, f in enumerate(frames)],
-                       selected_index=0,
-                       visible=False),  # Hide until bug is fixed : https://github.com/gradio-app/gradio/issues/9928
+                       selected_index=0),  # Hide until bug is fixed : https://github.com/gradio-app/gradio/issues/9928
             gr.Image(value=frames[0], label=_("Edited Frame") + f" #{0}"),
         ]
 
@@ -89,13 +88,9 @@ class App:
         frames = get_frames_from_dir(frames_dir)
 
         if not frames:
-            return [
-                gr.Image(label=_("Edited Frame") + f" #{frame}"),
-            ]
+            return gr.Image(label=_("Edited Frame") + f" #{frame}")
 
-        return [
-            gr.Image(value=frames[frame], label=_("Edited Frame") + f" #{frame}", type="filepath"),
-        ]
+        return gr.Image(value=frames[frame], label=_("Edited Frame") + f" #{frame}", type="filepath")
 
     def launch(self):
         with self.app:
@@ -168,12 +163,12 @@ class App:
                     with gr.TabItem(_("Key Frame Editor")):
                         with gr.Row():
                             vid_animation = gr.Video(label=_("Animation Video"), height=400)
-                        with gr.Column():
-                            sld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0, interactive=False, scale=0)
-                            gal_frames = gr.Gallery(show_label=False, rows=1, visible=False, scale=0)
                         with gr.Row(equal_height=True):
                             with gr.Column(scale=9):
                                 img_out = gr.Image(label=_("Edited Frame"), type="filepath")
+                                gal_frames = gr.Gallery(show_label=False, rows=1, visible=True, scale=0)
+                                sld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0, interactive=False,
+                                                               scale=0)
                                 # rsld_edit_frame_range = RangeSlider(label=_("Frame Edit Range"), scale=0, visible=False)
                             with gr.Column(scale=1):
                                 frame_expression_parameters = self.create_expression_parameters()
