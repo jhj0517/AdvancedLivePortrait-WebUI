@@ -2,6 +2,7 @@ import argparse
 import gradio as gr
 from gradio_i18n import Translate, gettext as _
 from gradio_rangeslider import RangeSlider
+from typing import Tuple
 
 from modules.live_portrait.live_portrait_inferencer import LivePortraitInferencer
 from modules.utils.paths import *
@@ -86,21 +87,19 @@ class App:
 
     def on_keyframe_change(
         self,
-        frame: int
+        frame_range: Tuple[int, int]
     ):
         frames_dir = os.path.join(self.args.output_dir, "temp", "video_frames")
         frames = get_frames_from_dir(frames_dir)
+        start_frame, end_frame = frame_range
 
         if not frames:
             return [
-                gr.Image(label=_("Edited Frame") + f" #{frame}"),
-                RangeSlider(label=_("Frame Edit Range"), scale=0)
+                gr.Image(label=_("Edited Frame") + f" #{start_frame}"),
             ]
 
         return [
-            gr.Image(value=frames[frame], label=_("Edited Frame") + f" #{frame}"),
-            RangeSlider(label=_("Frame Edit Range"), scale=0, value=(frame, frame), interactive=True,
-                        maximum=len(frames)-1, minimum=0)
+            gr.Image(value=frames[start_frame], label=_("Edited Frame") + f" #{start_frame}"),
         ]
 
     def launch(self):
