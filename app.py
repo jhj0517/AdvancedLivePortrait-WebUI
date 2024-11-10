@@ -61,14 +61,21 @@ class App:
         self,
         vid_input: str,
     ):
+        if vid_input is None or not vid_input:
+            return [
+                gr.Slider(label=_("Frame Selector"), value=0, interactive=False),
+                gr.Gallery(show_label=False, rows=1, visible=False, scale=0)
+            ]
         frames_dir = os.path.join(self.args.output_dir, "temp", "video_frames")
         extract_frames(vid_input=vid_input,
                        output_temp_dir=frames_dir)
         frames = get_frames_from_dir(frames_dir)
+
         return [
-            gr.Slider(label=_("Frame Selector"), value=0, minimum=0, maximum=len(frames), interactive=True),
+            gr.Slider(label=_("Frame Selector"), value=0, minimum=0, maximum=len(frames)-1, interactive=True),
             gr.Gallery(show_label=False, columns=len(frames), value=[[f, f"{i}"] for i, f in enumerate(frames)],
-                       visible=True, object_fit="scale-down")
+                       selected_index=0,
+                       visible=False)  # Hide until bug is fixed : https://github.com/gradio-app/gradio/issues/9928
         ]
 
     def on_keyframe_change(
@@ -150,11 +157,11 @@ class App:
                         with gr.Column():
                             rsld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0,
                                                             interactive=False)
-                            gal_frames = gr.Gallery(show_label=False, rows=1, visible=False)
+                            gal_frames = gr.Gallery(show_label=False, rows=1, visible=False, scale=0)
                         with gr.Row(equal_height=True):
                             with gr.Column(scale=9):
                                 img_out = gr.Image(label=_("Output Image"))
-                                rsld_edit_frame_range = RangeSlider(label=_("Frame Edit Range"))
+                                rsld_edit_frame_range = RangeSlider(label=_("Frame Edit Range"), scale=0)
                             with gr.Column(scale=1):
                                 expression_parameters = self.create_expression_parameters()
                                 with gr.Accordion("Opt in features", visible=False):
