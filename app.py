@@ -64,7 +64,9 @@ class App:
         if vid_input is None or not vid_input:
             return [
                 gr.Slider(label=_("Frame Selector"), value=0, interactive=False),
-                gr.Gallery(show_label=False, rows=1, visible=False, scale=0)
+                gr.Gallery(show_label=False, rows=1, visible=False, scale=0),
+                gr.Image(label=_("Edited Frame")),
+                RangeSlider(label=_("Frame Edit Range"), scale=0)
             ]
         frames_dir = os.path.join(self.args.output_dir, "temp", "video_frames")
         extract_frames(vid_input=vid_input,
@@ -75,7 +77,10 @@ class App:
             gr.Slider(label=_("Frame Selector"), value=0, minimum=0, maximum=len(frames)-1, interactive=True),
             gr.Gallery(show_label=False, columns=len(frames), value=[[f, f"{i}"] for i, f in enumerate(frames)],
                        selected_index=0,
-                       visible=False)  # Hide until bug is fixed : https://github.com/gradio-app/gradio/issues/9928
+                       visible=False),  # Hide until bug is fixed : https://github.com/gradio-app/gradio/issues/9928
+            gr.Image(value=frames[0], label=_("Edited Frame") + f" #{0}"),
+            RangeSlider(label=_("Frame Edit Range"), scale=0, value=(0, 0), interactive=True,
+                        maximum=len(frames)-1, minimum=0)
         ]
 
     def on_keyframe_change(
@@ -186,7 +191,7 @@ class App:
                         vid_animation.change(
                             fn=self.on_keyframe_video_upload,
                             inputs=[vid_animation],
-                            outputs=[sld_frame_selector, gal_frames]
+                            outputs=[sld_frame_selector, gal_frames, img_out, rsld_edit_frame_range]
                         )
                         sld_frame_selector.change(
                             fn=self.on_keyframe_change,
