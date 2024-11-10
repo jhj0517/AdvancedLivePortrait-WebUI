@@ -15,6 +15,7 @@ dill
 gradio
 gradio-i18n
 gradio-rangeslider
+gradio_imageslider
 
 
 # Tests
