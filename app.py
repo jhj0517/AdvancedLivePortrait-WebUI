@@ -63,7 +63,7 @@ class App:
     ):
         if vid_input is None or not vid_input:
             return [
-                gr.Slider(label=_("Frame Selector"), value=0, interactive=False),
+                gr.Slider(label=_("Frame Selector"), value=0, interactive=False, visible=False),
                 gr.Gallery(show_label=False, rows=1, visible=False, scale=0),
                 gr.Image(label=_("Edited Frame")),
                 RangeSlider(label=_("Frame Edit Range"), scale=0)
@@ -74,7 +74,7 @@ class App:
         frames = get_frames_from_dir(frames_dir)
 
         return [
-            gr.Slider(label=_("Frame Selector"), value=0, minimum=0, maximum=len(frames)-1, interactive=True),
+            gr.Slider(label=_("Frame Selector"), value=0, minimum=0, maximum=len(frames)-1, interactive=True, visible=False),
             gr.Gallery(show_label=False, columns=len(frames), value=[[f, f"{i}"] for i, f in enumerate(frames)],
                        selected_index=0,
                        visible=False),  # Hide until bug is fixed : https://github.com/gradio-app/gradio/issues/9928
@@ -174,7 +174,7 @@ class App:
                         with gr.Row():
                             vid_animation = gr.Video(label=_("Animation Video"), height=400)
                         with gr.Column():
-                            sld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0, interactive=False)
+                            sld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0, interactive=False, visible=False)
                             gal_frames = gr.Gallery(show_label=False, rows=1, visible=False, scale=0)
                         with gr.Row(equal_height=True):
                             with gr.Column(scale=9):
