@@ -93,7 +93,8 @@ class App:
 
         return [
             gr.Image(value=frames[frame], label=_("Edited Frame") + f" #{frame}"),
-            RangeSlider(label=_("Frame Edit Range"), scale=0, value=(frame, frame), interactive=True)
+            RangeSlider(label=_("Frame Edit Range"), scale=0, value=(frame, frame), interactive=True,
+                        maximum=len(frames)-1, minimum=0)
         ]
 
     def launch(self):
