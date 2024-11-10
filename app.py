@@ -67,7 +67,6 @@ class App:
                 gr.Slider(label=_("Frame Selector"), value=0, interactive=False, visible=False),
                 gr.Gallery(show_label=False, rows=1, visible=False, scale=0),
                 gr.Image(label=_("Edited Frame")),
-                RangeSlider(label=_("Frame Edit Range"), scale=0)
             ]
         frames_dir = os.path.join(self.args.output_dir, "temp", "video_frames")
         extract_frames(vid_input=vid_input,
@@ -75,31 +74,27 @@ class App:
         frames = get_frames_from_dir(frames_dir)
 
         return [
-            gr.Slider(label=_("Frame Selector"), value=0, minimum=0, maximum=len(frames)-1, interactive=True,
-                      visible=False),
+            gr.Slider(label=_("Frame Selector"), value=0, minimum=0, maximum=len(frames)-1, interactive=True, scale=0),
             gr.Gallery(show_label=False, columns=len(frames), value=[[f, f"{i}"] for i, f in enumerate(frames)],
                        selected_index=0,
                        visible=False),  # Hide until bug is fixed : https://github.com/gradio-app/gradio/issues/9928
             gr.Image(value=frames[0], label=_("Edited Frame") + f" #{0}"),
-            RangeSlider(label=_("Frame Edit Range"), scale=0, value=(0, 0), interactive=True,
-                        maximum=len(frames)-1, minimum=0)
         ]
 
     def on_keyframe_change(
         self,
-        frame_range: Tuple[int, int]
+        frame: int
     ):
         frames_dir = os.path.join(self.args.output_dir, "temp", "video_frames")
         frames = get_frames_from_dir(frames_dir)
-        start_frame, end_frame = frame_range
 
         if not frames:
             return [
-                gr.Image(label=_("Edited Frame") + f" #{start_frame}"),
+                gr.Image(label=_("Edited Frame") + f" #{frame}"),
             ]
 
         return [
-            gr.Image(value=frames[start_frame], label=_("Edited Frame") + f" #{start_frame}"),
+            gr.Image(value=frames[frame], label=_("Edited Frame") + f" #{frame}", type="filepath"),
         ]
 
     def launch(self):
@@ -174,12 +169,12 @@ class App:
                         with gr.Row():
                             vid_animation = gr.Video(label=_("Animation Video"), height=400)
                         with gr.Column():
-                            sld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0, interactive=False, visible=False)
+                            sld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0, interactive=False, scale=0)
                             gal_frames = gr.Gallery(show_label=False, rows=1, visible=False, scale=0)
                         with gr.Row(equal_height=True):
                             with gr.Column(scale=9):
-                                img_out = gr.Image(label=_("Edited Frame"))
-                                rsld_edit_frame_range = RangeSlider(label=_("Frame Edit Range"), scale=0)
+                                img_out = gr.Image(label=_("Edited Frame"), type="filepath")
+                                # rsld_edit_frame_range = RangeSlider(label=_("Frame Edit Range"), scale=0, visible=False)
                             with gr.Column(scale=1):
                                 frame_expression_parameters = self.create_expression_parameters()
                                 with gr.Accordion("Opt in features", visible=False):
@@ -191,12 +186,13 @@ class App:
                         vid_animation.change(
                             fn=self.on_keyframe_video_upload,
                             inputs=[vid_animation],
-                            outputs=[sld_frame_selector, gal_frames, img_out, rsld_edit_frame_range]
+                            outputs=[sld_frame_selector, gal_frames, img_out]
                         )
+
                         sld_frame_selector.change(
                             fn=self.on_keyframe_change,
                             inputs=[sld_frame_selector],
-                            outputs=[img_out, rsld_edit_frame_range]
+                            outputs=[img_out]
                         )
 
                         params = vid_params + [img_ref, vid_driven]
