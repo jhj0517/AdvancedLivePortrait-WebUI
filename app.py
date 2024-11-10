@@ -176,7 +176,7 @@ class App:
                                 img_out = gr.Image(label=_("Edited Frame"), type="filepath")
                                 sld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0, interactive=False,
                                                                scale=0)
-                                gal_frames = gr.Gallery(show_label=False, rows=1, visible=True, scale=0,
+                                gal_frames = gr.Gallery(show_label=False, rows=1, visible=False, scale=0,
                                                         allow_preview=True, height=300, selected_index=0, container=False)
                                 # rsld_edit_frame_range = RangeSlider(label=_("Frame Edit Range"), scale=0, visible=False)
                             with gr.Column(scale=1):
