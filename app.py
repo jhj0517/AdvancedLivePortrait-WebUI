@@ -84,7 +84,6 @@ class App:
                             fn=self.inferencer.edit_expression,
                             inputs=params + opt_in_features_params,
                             outputs=img_out,
-                            show_progress="minimal",
                             queue=True
                         )
 
