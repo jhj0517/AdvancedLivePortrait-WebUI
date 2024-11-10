@@ -14,3 +14,9 @@ tyro
 dill
 gradio
 gradio-i18n
+
+
+# Tests
+# pytest
+# scikit-image
+# moviepy

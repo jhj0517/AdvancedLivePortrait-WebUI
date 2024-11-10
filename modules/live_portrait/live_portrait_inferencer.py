@@ -4,17 +4,19 @@ import cv2
 import time
 import copy
 import dill
+import torch
 from ultralytics import YOLO
 import safetensors.torch
 import gradio as gr
 from gradio_i18n import Translate, gettext as _
 from ultralytics.utils import LOGGER as ultralytics_logger
 from enum import Enum
-from typing import Union
+from typing import Union, List, Dict, Tuple
 import spaces
 
 from modules.utils.paths import *
 from modules.utils.image_helper import *
+from modules.utils.video_helper import *
 from modules.live_portrait.model_downloader import *
 from modules.live_portrait.live_portrait_wrapper import LivePortraitWrapper
 from modules.utils.camera import get_rotation_matrix
@@ -33,8 +35,17 @@ class LivePortraitInferencer:
                  model_dir: str = MODELS_DIR,
                  output_dir: str = OUTPUTS_DIR):
         self.model_dir = model_dir
-        os.makedirs(os.path.join(self.model_dir, "animal"), exist_ok=True)
         self.output_dir = output_dir
+        relative_dirs = [
+            os.path.join(self.model_dir, "animal"),
+            os.path.join(self.output_dir, "videos"),
+            os.path.join(self.output_dir, "temp"),
+            os.path.join(self.output_dir, "temp", "video_frames"),
+            os.path.join(self.output_dir, "temp", "video_frames", "out"),
+        ]
+        for dir_path in relative_dirs:
+            os.makedirs(dir_path, exist_ok=True)
+
         self.model_config = load_yaml(MODEL_CONFIG)["model_params"]
 
         self.appearance_feature_extractor = None
@@ -121,7 +132,7 @@ class LivePortraitInferencer:
         )
         self.stitching_retargeting_module = {"stitching": self.stitching_retargeting_module}
 
-        if self.pipeline is None:
+        if self.pipeline is None or model_type != self.model_type:
             self.pipeline = LivePortraitWrapper(
                 InferenceConfig(),
                 self.appearance_feature_extractor,
@@ -137,26 +148,24 @@ class LivePortraitInferencer:
     @spaces.GPU
     def edit_expression(self,
                         model_type: str = ModelType.HUMAN.value,
-                        rotate_pitch=0,
-                        rotate_yaw=0,
-                        rotate_roll=0,
-                        blink=0,
-                        eyebrow=0,
-                        wink=0,
-                        pupil_x=0,
-                        pupil_y=0,
-                        aaa=0,
-                        eee=0,
-                        woo=0,
-                        smile=0,
-                        src_ratio=1,
-                        sample_ratio=1,
-                        sample_parts="All",
-                        crop_factor=1.5,
-                        src_image=None,
-                        sample_image=None,
-                        motion_link=None,
-                        add_exp=None):
+                        rotate_pitch: float = 0,
+                        rotate_yaw: float = 0,
+                        rotate_roll: float = 0,
+                        blink: float = 0,
+                        eyebrow: float = 0,
+                        wink: float = 0,
+                        pupil_x: float = 0,
+                        pupil_y: float = 0,
+                        aaa: float = 0,
+                        eee: float = 0,
+                        woo: float = 0,
+                        smile: float = 0,
+                        src_ratio: float = 1,
+                        sample_ratio: float = 1,
+                        sample_parts: str = SamplePart.ALL.value,
+                        crop_factor: float = 2.3,
+                        src_image: Optional[str] = None,
+                        sample_image: Optional[str] = None,) -> None:
         if isinstance(model_type, ModelType):
             model_type = model_type.value
         if model_type not in [mode.value for mode in ModelType]:
@@ -168,200 +177,159 @@ class LivePortraitInferencer:
             )
 
         try:
-            rotate_yaw = -rotate_yaw
+            with torch.autocast(device_type=self.device, enabled=(self.device == "cuda")):
+                rotate_yaw = -rotate_yaw
 
-            new_editor_link = None
-            if isinstance(motion_link, np.ndarray) and motion_link:
-                self.psi = motion_link[0]
-                new_editor_link = motion_link.copy()
-            elif src_image is not None:
-                if id(src_image) != id(self.src_image) or self.crop_factor != crop_factor:
-                    self.crop_factor = crop_factor
-                    self.psi = self.prepare_source(src_image, crop_factor)
-                    self.src_image = src_image
-                new_editor_link = []
-                new_editor_link.append(self.psi)
-            else:
-                return None
+                if src_image is not None:
+                    if id(src_image) != id(self.src_image) or self.crop_factor != crop_factor:
+                        self.crop_factor = crop_factor
+                        self.psi = self.prepare_source(src_image, crop_factor)
+                        self.src_image = src_image
+                else:
+                    return None
 
-            psi = self.psi
-            s_info = psi.x_s_info
-            #delta_new = copy.deepcopy()
-            s_exp = s_info['exp'] * src_ratio
-            s_exp[0, 5] = s_info['exp'][0, 5]
-            s_exp += s_info['kp']
+                psi = self.psi
+                s_info = psi.x_s_info
+                #delta_new = copy.deepcopy()
+                s_exp = s_info['exp'] * src_ratio
+                s_exp[0, 5] = s_info['exp'][0, 5]
+                s_exp += s_info['kp']
 
-            es = ExpressionSet()
+                es = ExpressionSet()
 
-            if isinstance(sample_image, np.ndarray) and sample_image:
-                if id(self.sample_image) != id(sample_image):
-                    self.sample_image = sample_image
-                    d_image_np = (sample_image * 255).byte().numpy()
-                    d_face = self.crop_face(d_image_np[0], 1.7)
-                    i_d = self.prepare_src_image(d_face)
-                    self.d_info = self.pipeline.get_kp_info(i_d)
-                    self.d_info['exp'][0, 5, 0] = 0
-                    self.d_info['exp'][0, 5, 1] = 0
+                if isinstance(sample_image, np.ndarray) and sample_image:
+                    if id(self.sample_image) != id(sample_image):
+                        self.sample_image = sample_image
+                        d_image_np = (sample_image * 255).byte().numpy()
+                        d_face = self.crop_face(d_image_np[0], 1.7)
+                        i_d = self.prepare_src_image(d_face)
+                        self.d_info = self.pipeline.get_kp_info(i_d)
+                        self.d_info['exp'][0, 5, 0] = 0
+                        self.d_info['exp'][0, 5, 1] = 0
 
-                # "OnlyExpression", "OnlyRotation", "OnlyMouth", "OnlyEyes", "All"
-                if sample_parts == SamplePart.ONLY_EXPRESSION.value or sample_parts == SamplePart.ONLY_EXPRESSION.ALL.value:
-                    es.e += self.d_info['exp'] * sample_ratio
-                if sample_parts == SamplePart.ONLY_ROTATION.value or sample_parts == SamplePart.ONLY_ROTATION.ALL.value:
-                    rotate_pitch += self.d_info['pitch'] * sample_ratio
-                    rotate_yaw += self.d_info['yaw'] * sample_ratio
-                    rotate_roll += self.d_info['roll'] * sample_ratio
-                elif sample_parts == SamplePart.ONLY_MOUTH.value:
-                    self.retargeting(es.e, self.d_info['exp'], sample_ratio, (14, 17, 19, 20))
-                elif sample_parts == SamplePart.ONLY_EYES.value:
-                    self.retargeting(es.e, self.d_info['exp'], sample_ratio, (1, 2, 11, 13, 15, 16))
+                    # "OnlyExpression", "OnlyRotation", "OnlyMouth", "OnlyEyes", "All"
+                    if sample_parts == SamplePart.ONLY_EXPRESSION.value or sample_parts == SamplePart.ONLY_EXPRESSION.ALL.value:
+                        es.e += self.d_info['exp'] * sample_ratio
+                    if sample_parts == SamplePart.ONLY_ROTATION.value or sample_parts == SamplePart.ONLY_ROTATION.ALL.value:
+                        rotate_pitch += self.d_info['pitch'] * sample_ratio
+                        rotate_yaw += self.d_info['yaw'] * sample_ratio
+                        rotate_roll += self.d_info['roll'] * sample_ratio
+                    elif sample_parts == SamplePart.ONLY_MOUTH.value:
+                        self.retargeting(es.e, self.d_info['exp'], sample_ratio, (14, 17, 19, 20))
+                    elif sample_parts == SamplePart.ONLY_EYES.value:
+                        self.retargeting(es.e, self.d_info['exp'], sample_ratio, (1, 2, 11, 13, 15, 16))
 
-            es.r = self.calc_fe(es.e, blink, eyebrow, wink, pupil_x, pupil_y, aaa, eee, woo, smile,
-                                rotate_pitch, rotate_yaw, rotate_roll)
+                es.r = self.calc_fe(es.e, blink, eyebrow, wink, pupil_x, pupil_y, aaa, eee, woo, smile,
+                                    rotate_pitch, rotate_yaw, rotate_roll)
 
-            if isinstance(add_exp, ExpressionSet):
-                es.add(add_exp)
+                new_rotate = get_rotation_matrix(s_info['pitch'] + es.r[0], s_info['yaw'] + es.r[1],
+                                                 s_info['roll'] + es.r[2])
+                x_d_new = (s_info['scale'] * (1 + es.s)) * ((s_exp + es.e) @ new_rotate) + s_info['t']
 
-            new_rotate = get_rotation_matrix(s_info['pitch'] + es.r[0], s_info['yaw'] + es.r[1],
-                                             s_info['roll'] + es.r[2])
-            x_d_new = (s_info['scale'] * (1 + es.s)) * ((s_exp + es.e) @ new_rotate) + s_info['t']
+                x_d_new = self.pipeline.stitching(psi.x_s_user, x_d_new)
 
-            x_d_new = self.pipeline.stitching(psi.x_s_user, x_d_new)
+                crop_out = self.pipeline.warp_decode(psi.f_s_user, psi.x_s_user, x_d_new)
+                crop_out = self.pipeline.parse_output(crop_out['out'])[0]
 
-            crop_out = self.pipeline.warp_decode(psi.f_s_user, psi.x_s_user, x_d_new)
-            crop_out = self.pipeline.parse_output(crop_out['out'])[0]
+                crop_with_fullsize = cv2.warpAffine(crop_out, psi.crop_trans_m, get_rgb_size(psi.src_rgb), cv2.INTER_LINEAR)
+                out = np.clip(psi.mask_ori * crop_with_fullsize + (1 - psi.mask_ori) * psi.src_rgb, 0, 255).astype(np.uint8)
 
-            crop_with_fullsize = cv2.warpAffine(crop_out, psi.crop_trans_m, get_rgb_size(psi.src_rgb), cv2.INTER_LINEAR)
-            out = np.clip(psi.mask_ori * crop_with_fullsize + (1 - psi.mask_ori) * psi.src_rgb, 0, 255).astype(np.uint8)
+                temp_out_img_path, out_img_path = get_auto_incremental_file_path(TEMP_DIR, "png"), get_auto_incremental_file_path(OUTPUTS_DIR, "png")
+                save_image(numpy_array=crop_out, output_path=temp_out_img_path)
+                save_image(numpy_array=out, output_path=out_img_path)
 
-            temp_out_img_path, out_img_path = get_auto_incremental_file_path(TEMP_DIR, "png"), get_auto_incremental_file_path(OUTPUTS_DIR, "png")
-            save_image(numpy_array=crop_out, output_path=temp_out_img_path)
-            save_image(numpy_array=out, output_path=out_img_path)
-
-            new_editor_link.append(es)
-
-            return out
+                return out
         except Exception as e:
             raise
 
     @spaces.GPU
     def create_video(self,
-                     retargeting_eyes,
-                     retargeting_mouth,
-                     turn_on,
-                     tracking_src_vid,
-                     animate_without_vid,
-                     command,
-                     crop_factor,
-                     src_images=None,
-                     driving_images=None,
-                     motion_link=None,
-                     progress=gr.Progress()):
-        if not turn_on:
-            return None, None
-        src_length = 1
+                     model_type: str = ModelType.HUMAN.value,
+                     retargeting_eyes: float = 1,
+                     retargeting_mouth: float = 1,
+                     crop_factor: float = 2.3,
+                     src_image: Optional[str] = None,
+                     driving_vid_path: Optional[str] = None,
+                     progress: gr.Progress = gr.Progress()
+                     ):
+        if self.pipeline is None or model_type != self.model_type:
+            self.load_models(
+                model_type=model_type
+            )
 
-        if src_images is None:
-            if motion_link is not None:
-                self.psi_list = [motion_link[0]]
-            else:
-                return None, None
+        try:
+            vid_info = get_video_info(vid_input=driving_vid_path)
 
-        if src_images is not None:
-            src_length = len(src_images)
-            if id(src_images) != id(self.src_images) or self.crop_factor != crop_factor:
-                self.crop_factor = crop_factor
-                self.src_images = src_images
-                if 1 < src_length:
-                    self.psi_list = self.prepare_source(src_images, crop_factor, True, tracking_src_vid)
-                else:
-                    self.psi_list = [self.prepare_source(src_images, crop_factor)]
+            if src_image is not None:
+                if id(src_image) != id(self.src_image) or self.crop_factor != crop_factor:
+                    self.crop_factor = crop_factor
+                    self.src_image = src_image
 
-        cmd_list, cmd_length = self.parsing_command(command, motion_link)
-        if cmd_list is None:
-            return None,None
-        cmd_idx = 0
+                    self.psi_list = [self.prepare_source(src_image, crop_factor)]
 
-        driving_length = 0
-        if driving_images is not None:
-            if id(driving_images) != id(self.driving_images):
-                self.driving_images = driving_images
-                self.driving_values = self.prepare_driving_video(driving_images)
-            driving_length = len(self.driving_values)
+            progress(0, desc="Extracting frames from the video..")
+            driving_images, vid_sound = extract_frames(driving_vid_path, os.path.join(self.output_dir, "temp", "video_frames")), extract_sound(driving_vid_path)
 
-        total_length = max(driving_length, src_length)
+            driving_length = 0
+            if driving_images is not None:
+                if id(driving_images) != id(self.driving_images):
+                    self.driving_images = driving_images
+                    self.driving_values = self.prepare_driving_video(driving_images)
+                driving_length = len(self.driving_values)
 
-        if animate_without_vid:
-            total_length = max(total_length, cmd_length)
+            total_length = len(driving_images)
 
-        c_i_es = ExpressionSet()
-        c_o_es = ExpressionSet()
-        d_0_es = None
-        out_list = []
+            c_i_es = ExpressionSet()
+            c_o_es = ExpressionSet()
+            d_0_es = None
 
-        psi = None
-        for i in range(total_length):
+            psi = None
+            with torch.autocast(device_type=self.device, enabled=(self.device == "cuda")):
+                for i in range(total_length):
 
-            if i < src_length:
-                psi = self.psi_list[i]
-                s_info = psi.x_s_info
-                s_es = ExpressionSet(erst=(s_info['kp'] + s_info['exp'], torch.Tensor([0, 0, 0]), s_info['scale'], s_info['t']))
+                    if i == 0:
+                        psi = self.psi_list[i]
+                        s_info = psi.x_s_info
+                        s_es = ExpressionSet(erst=(s_info['kp'] + s_info['exp'], torch.Tensor([0, 0, 0]), s_info['scale'], s_info['t']))
 
-            new_es = ExpressionSet(es=s_es)
+                    new_es = ExpressionSet(es=s_es)
 
-            if i < cmd_length:
-                cmd = cmd_list[cmd_idx]
-                if 0 < cmd.change:
-                    cmd.change -= 1
-                    c_i_es.add(cmd.es)
-                    c_i_es.sub(c_o_es)
-                elif 0 < cmd.keep:
-                    cmd.keep -= 1
+                    if i < driving_length:
+                        d_i_info = self.driving_values[i]
+                        d_i_r = torch.Tensor([d_i_info['pitch'], d_i_info['yaw'], d_i_info['roll']]) # .float().to(device="cuda:0")
 
-                new_es.add(c_i_es)
+                        if d_0_es is None:
+                            d_0_es = ExpressionSet(erst = (d_i_info['exp'], d_i_r, d_i_info['scale'], d_i_info['t']))
 
-                if cmd.change == 0 and cmd.keep == 0:
-                    cmd_idx += 1
-                    if cmd_idx < len(cmd_list):
-                        c_o_es = ExpressionSet(es=c_i_es)
-                        cmd = cmd_list[cmd_idx]
-                        c_o_es.div(cmd.change)
-            elif 0 < cmd_length:
-                new_es.add(c_i_es)
+                            self.retargeting(s_es.e, d_0_es.e, retargeting_eyes, (11, 13, 15, 16))
+                            self.retargeting(s_es.e, d_0_es.e, retargeting_mouth, (14, 17, 19, 20))
 
-            if i < driving_length:
-                d_i_info = self.driving_values[i]
-                d_i_r = torch.Tensor([d_i_info['pitch'], d_i_info['yaw'], d_i_info['roll']])#.float().to(device="cuda:0")
+                        new_es.e += d_i_info['exp'] - d_0_es.e
+                        new_es.r += d_i_r - d_0_es.r
+                        new_es.t += d_i_info['t'] - d_0_es.t
 
-                if d_0_es is None:
-                    d_0_es = ExpressionSet(erst = (d_i_info['exp'], d_i_r, d_i_info['scale'], d_i_info['t']))
+                    r_new = get_rotation_matrix(
+                        s_info['pitch'] + new_es.r[0], s_info['yaw'] + new_es.r[1], s_info['roll'] + new_es.r[2])
+                    d_new = new_es.s * (new_es.e @ r_new) + new_es.t
+                    d_new = self.pipeline.stitching(psi.x_s_user, d_new)
+                    crop_out = self.pipeline.warp_decode(psi.f_s_user, psi.x_s_user, d_new)
+                    crop_out = self.pipeline.parse_output(crop_out['out'])[0]
 
-                    self.retargeting(s_es.e, d_0_es.e, retargeting_eyes, (11, 13, 15, 16))
-                    self.retargeting(s_es.e, d_0_es.e, retargeting_mouth, (14, 17, 19, 20))
+                    crop_with_fullsize = cv2.warpAffine(crop_out, psi.crop_trans_m, get_rgb_size(psi.src_rgb),
+                                                        cv2.INTER_LINEAR)
+                    out = np.clip(psi.mask_ori * crop_with_fullsize + (1 - psi.mask_ori) * psi.src_rgb, 0, 255).astype(
+                        np.uint8)
 
-                new_es.e += d_i_info['exp'] - d_0_es.e
-                new_es.r += d_i_r - d_0_es.r
-                new_es.t += d_i_info['t'] - d_0_es.t
+                    out_frame_path = get_auto_incremental_file_path(os.path.join(self.output_dir, "temp", "video_frames", "out"), "png")
+                    save_image(out, out_frame_path)
 
-            r_new = get_rotation_matrix(
-                s_info['pitch'] + new_es.r[0], s_info['yaw'] + new_es.r[1], s_info['roll'] + new_es.r[2])
-            d_new = new_es.s * (new_es.e @ r_new) + new_es.t
-            d_new = self.pipeline.stitching(psi.x_s_user, d_new)
-            crop_out = self.pipeline.warp_decode(psi.f_s_user, psi.x_s_user, d_new)
-            crop_out = self.pipeline.parse_output(crop_out['out'])[0]
+                    progress(i/total_length, desc=f"Generating frames {i}/{total_length} ..")
 
-            crop_with_fullsize = cv2.warpAffine(crop_out, psi.crop_trans_m, get_rgb_size(psi.src_rgb),
-                                                cv2.INTER_LINEAR)
-            out = np.clip(psi.mask_ori * crop_with_fullsize + (1 - psi.mask_ori) * psi.src_rgb, 0, 255).astype(
-                np.uint8)
-            out_list.append(out)
+                video_path = create_video_from_frames(TEMP_VIDEO_OUT_FRAMES_DIR, frame_rate=vid_info.frame_rate, output_dir=os.path.join(self.output_dir, "videos"))
 
-            progress(i/total_length, "predicting..")
-
-        if len(out_list) == 0:
-            return None
-
-        out_imgs = torch.cat([pil2tensor(img_rgb) for img_rgb in out_list])
-        return out_imgs
+                return video_path
+        except Exception as e:
+            raise
 
     def download_if_no_models(self,
                               model_type: str = ModelType.HUMAN.value,
@@ -535,7 +503,6 @@ class LivePortraitInferencer:
     @staticmethod
     def retargeting(delta_out, driving_exp, factor, idxes):
         for idx in idxes:
-            # delta_out[0, idx] -= src_exp[0, idx] * factor
             delta_out[0, idx] += driving_exp[0, idx] * factor
 
     @staticmethod
@@ -560,8 +527,15 @@ class LivePortraitInferencer:
 
     @spaces.GPU
     def prepare_src_image(self, img):
-        h, w = img.shape[:2]
-        input_shape = [256,256]
+        if isinstance(img, str):
+            img = image_path_to_array(img)
+
+        if len(img.shape) <= 3:
+            img = img[np.newaxis, ...]
+
+        d, h, w, c = img.shape
+        img = img[0] # Select first dimension
+        input_shape = [256, 256]
         if h != input_shape[0] or w != input_shape[1]:
             if 256 < h: interpolation = cv2.INTER_AREA
             else: interpolation = cv2.INTER_LINEAR
@@ -632,11 +606,9 @@ class LivePortraitInferencer:
         return psi_list
 
     def prepare_driving_video(self, face_images):
-        print("Prepare driving video...")
-        f_img_np = (face_images * 255).byte().numpy()
-
+        # print("Prepare driving video...")
         out_list = []
-        for f_img in f_img_np:
+        for f_img in face_images:
             i_d = self.prepare_src_image(f_img)
             d_info = self.pipeline.get_kp_info(i_d)
             out_list.append(d_info)

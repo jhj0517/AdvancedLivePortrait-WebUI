@@ -56,6 +56,7 @@ def calc_crop_limit(center, img_size, crop_size):
 def save_image(numpy_array: np.ndarray, output_path: str):
     out = Image.fromarray(numpy_array)
     out.save(output_path, compress_level=1, format="png")
+    return output_path
 
 
 def image_path_to_array(image_path: str) -> np.ndarray:

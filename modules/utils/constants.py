@@ -32,3 +32,9 @@ GRADIO_CSS = """
     font-size: 0.7em; 
 }
 """
+
+SOUND_FILE_EXT = ['.mp3', '.wav', '.aac', '.flac', '.ogg', '.m4a', '.wma']
+IMAGE_FILE_EXT = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp']
+VIDEO_FILE_EXT = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv', '.mpeg', '.mpg', '.m4v', '.3gp', '.ts', '.vob', '.gif']
+TRANSPARENT_VIDEO_FILE_EXT = ['.webm', '.mov', '.gif']
+SUPPORTED_VIDEO_FILE_EXT = ['.mp4', '.mov', '.webm', '.gif']
