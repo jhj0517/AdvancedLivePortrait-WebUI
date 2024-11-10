@@ -167,10 +167,9 @@ class App:
 
                     with gr.TabItem(_("Key Frame Editor")):
                         with gr.Row():
-                            vid_animation = gr.Video(label=_("Animation Video"), height=700)
+                            vid_animation = gr.Video(label=_("Animation Video"), height=400)
                         with gr.Column():
-                            sld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0,
-                                                            interactive=False)
+                            sld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0, interactive=False)
                             gal_frames = gr.Gallery(show_label=False, rows=1, visible=False, scale=0)
                         with gr.Row(equal_height=True):
                             with gr.Column(scale=9):
