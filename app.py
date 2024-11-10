@@ -66,9 +66,9 @@ class App:
                        output_temp_dir=frames_dir)
         frames = get_frames_from_dir(frames_dir)
         return [
-            RangeSlider(label=_("Frame Selector"), value=(0, 0), minimum=0, maximum=len(frames), interactive=True),
-            gr.Gallery(show_label=False, rows=1, columns=len(frames), value=[[f, f"{i}"] for i, f in enumerate(frames)],
-                       visible=True)
+            gr.Slider(label=_("Frame Selector"), value=0, minimum=0, maximum=len(frames), interactive=True),
+            gr.Gallery(show_label=False, columns=len(frames), value=[[f, f"{i}"] for i, f in enumerate(frames)],
+                       visible=True, object_fit="scale-down")
         ]
 
     def on_keyframe_change(
@@ -148,12 +148,13 @@ class App:
                         with gr.Row():
                             vid_animation = gr.Video(label=_("Animation Video"))
                         with gr.Column():
-                            rsld_frame_selector = RangeSlider(label=_("Frame Selector"), value=(0, 0),
-                                                              interactive=False)
+                            rsld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0,
+                                                            interactive=False)
                             gal_frames = gr.Gallery(show_label=False, rows=1, visible=False)
                         with gr.Row(equal_height=True):
                             with gr.Column(scale=9):
                                 img_out = gr.Image(label=_("Output Image"))
+                                rsld_edit_frame_range = RangeSlider(label=_("Frame Edit Range"))
                             with gr.Column(scale=1):
                                 expression_parameters = self.create_expression_parameters()
                                 with gr.Accordion("Opt in features", visible=False):
