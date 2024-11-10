@@ -74,7 +74,8 @@ class App:
         frames = get_frames_from_dir(frames_dir)
 
         return [
-            gr.Slider(label=_("Frame Selector"), value=0, minimum=0, maximum=len(frames)-1, interactive=True, visible=False),
+            gr.Slider(label=_("Frame Selector"), value=0, minimum=0, maximum=len(frames)-1, interactive=True,
+                      visible=False),
             gr.Gallery(show_label=False, columns=len(frames), value=[[f, f"{i}"] for i, f in enumerate(frames)],
                        selected_index=0,
                        visible=False),  # Hide until bug is fixed : https://github.com/gradio-app/gradio/issues/9928
