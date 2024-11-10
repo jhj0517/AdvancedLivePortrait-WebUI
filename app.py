@@ -88,9 +88,17 @@ class App:
         frames = get_frames_from_dir(frames_dir)
 
         if not frames:
-            return gr.Image(label=_("Edited Frame") + f" #{frame}")
+            return [
+                gr.Image(label=_("Edited Frame") + f" #{frame}"),
+                gr.Gallery(show_label=False, columns=len(frames), value=[[f, f"{i}"] for i, f in enumerate(frames)],
+                           selected_index=0),
+            ]
 
-        return gr.Image(value=frames[frame], label=_("Edited Frame") + f" #{frame}", type="filepath")
+        return [
+            gr.Image(value=frames[frame], label=_("Edited Frame") + f" #{frame}", type="filepath"),
+            gr.Gallery(show_label=False, columns=len(frames), value=[[f, f"{i}"] for i, f in enumerate(frames)],
+                       selected_index=frame),
+        ]
 
     def launch(self):
         with self.app:
@@ -166,7 +174,8 @@ class App:
                         with gr.Row(equal_height=True):
                             with gr.Column(scale=9):
                                 img_out = gr.Image(label=_("Edited Frame"), type="filepath")
-                                gal_frames = gr.Gallery(show_label=False, rows=1, visible=True, scale=0)
+                                gal_frames = gr.Gallery(show_label=False, rows=1, visible=True, scale=0,
+                                                        allow_preview=False, object_fit="scale-down")
                                 sld_frame_selector = gr.Slider(label=_("Frame Selector"), value=0, interactive=False,
                                                                scale=0)
                                 # rsld_edit_frame_range = RangeSlider(label=_("Frame Edit Range"), scale=0, visible=False)
@@ -187,7 +196,7 @@ class App:
                         sld_frame_selector.change(
                             fn=self.on_keyframe_change,
                             inputs=[sld_frame_selector],
-                            outputs=[img_out]
+                            outputs=[img_out, gal_frames]
                         )
 
                         params = vid_params + [img_ref, vid_driven]
