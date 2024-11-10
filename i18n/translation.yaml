@@ -24,6 +24,14 @@ en: # English
   OnlyEyes: OnlyEyes
   All: All
   Value above 5 may appear distorted: Value above 5 may appear distorted
+  Expression Editor: Expression Editor
+  Video Driven: Video Driven
+  Expression Video: Expression Video
+  GENERATE: GENERATE
+  Output Video: Output Video
+  First frame mouth alignment factor: First frame mouth alignment factor
+  First frame eyes alignment factor: First frame eyes alignment factor
+  Face Crop Factor: Face Crop Factor
 
 ko: # Korean
   Language: 언어
@@ -51,6 +59,14 @@ ko: # Korean
   OnlyEyes: 눈만
   All: 전부
   Value above 5 may appear distorted: 5 이상은 왜곡돼 보일 수 있습니다.
+  Expression Editor: 표정 편집기
+  Video Driven: 영상 변환
+  Expression Video: 표정 영상
+  GENERATE: 생성
+  Output Video: 결과 영상
+  First frame mouth alignment factor: 첫 프레임 입 반영 비율
+  First frame eyes alignment factor: 첫 프레임 눈 반영 비율
+  Face Crop Factor: 얼굴 크롭 비율
 
 ja: # Japanese
   Language: 言語
@@ -78,6 +94,14 @@ ja: # Japanese
   OnlyEyes: OnlyEyes
   All: All
   Value above 5 may appear distorted: Value above 5 may appear distorted
+  Expression Editor: Expression Editor
+  Video Driven: Video Driven
+  Expression Video: Expression Video
+  GENERATE: GENERATE
+  Output Video: Output Video
+  First frame mouth alignment factor: First frame mouth alignment factor
+  First frame eyes alignment factor: First frame eyes alignment factor
+  Face Crop Factor: Face Crop Factor
 
 es: # Spanish
   Language: Idioma
@@ -105,6 +129,14 @@ es: # Spanish
   OnlyEyes: OnlyEyes
   All: All
   Value above 5 may appear distorted: Value above 5 may appear distorted
+  Expression Editor: Expression Editor
+  Video Driven: Video Driven
+  Expression Video: Expression Video
+  GENERATE: GENERATE
+  Output Video: Output Video
+  First frame mouth alignment factor: First frame mouth alignment factor
+  First frame eyes alignment factor: First frame eyes alignment factor
+  Face Crop Factor: Face Crop Factor
 
 fr: # French
   Language: Langue
@@ -132,6 +164,14 @@ fr: # French
   OnlyEyes: OnlyEyes
   All: All
   Value above 5 may appear distorted: Value above 5 may appear distorted
+  Expression Editor: Expression Editor
+  Video Driven: Video Driven
+  Expression Video: Expression Video
+  GENERATE: GENERATE
+  Output Video: Output Video
+  First frame mouth alignment factor: First frame mouth alignment factor
+  First frame eyes alignment factor: First frame eyes alignment factor
+  Face Crop Factor: Face Crop Factor
 
 de: # German
   Language: Sprache
@@ -159,6 +199,14 @@ de: # German
   OnlyEyes: OnlyEyes
   All: All
   Value above 5 may appear distorted: Value above 5 may appear distorted
+  Expression Editor: Expression Editor
+  Video Driven: Video Driven
+  Expression Video: Expression Video
+  GENERATE: GENERATE
+  Output Video: Output Video
+  First frame mouth alignment factor: First frame mouth alignment factor
+  First frame eyes alignment factor: First frame eyes alignment factor
+  Face Crop Factor: Face Crop Factor
 
 zh: # Chinese
   Language: 语言
@@ -186,6 +234,14 @@ zh: # Chinese
   OnlyEyes: OnlyEyes
   All: All
   Value above 5 may appear distorted: Value above 5 may appear distorted
+  Expression Editor: Expression Editor
+  Video Driven: Video Driven
+  Expression Video: Expression Video
+  GENERATE: GENERATE
+  Output Video: Output Video
+  First frame mouth alignment factor: First frame mouth alignment factor
+  First frame eyes alignment factor: First frame eyes alignment factor
+  Face Crop Factor: Face Crop Factor
 
 uk: # Ukrainian
   Language: Мова
@@ -213,6 +269,14 @@ uk: # Ukrainian
   OnlyEyes: OnlyEyes
   All: All
   Value above 5 may appear distorted: Value above 5 may appear distorted
+  Expression Editor: Expression Editor
+  Video Driven: Video Driven
+  Expression Video: Expression Video
+  GENERATE: GENERATE
+  Output Video: Output Video
+  First frame mouth alignment factor: First frame mouth alignment factor
+  First frame eyes alignment factor: First frame eyes alignment factor
+  Face Crop Factor: Face Crop Factor
 
 ru: # Russian
   Language: Язык
@@ -240,6 +304,14 @@ ru: # Russian
   OnlyEyes: OnlyEyes
   All: All
   Value above 5 may appear distorted: Value above 5 may appear distorted
+  Expression Editor: Expression Editor
+  Video Driven: Video Driven
+  Expression Video: Expression Video
+  GENERATE: GENERATE
+  Output Video: Output Video
+  First frame mouth alignment factor: First frame mouth alignment factor
+  First frame eyes alignment factor: First frame eyes alignment factor
+  Face Crop Factor: Face Crop Factor
 
 tr: # Turkish
   Language: Dil
@@ -267,3 +339,11 @@ tr: # Turkish
   OnlyEyes: OnlyEyes
   All: All
   Value above 5 may appear distorted: Value above 5 may appear distorted
+  Expression Editor: Expression Editor
+  Video Driven: Video Driven
+  Expression Video: Expression Video
+  GENERATE: GENERATE
+  Output Video: Output Video
+  First frame mouth alignment factor: First frame mouth alignment factor
+  First frame eyes alignment factor: First frame eyes alignment factor
+  Face Crop Factor: Face Crop Factor

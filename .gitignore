@@ -4,5 +4,7 @@ models/
 outputs/
 *.png
 *.jpg
+*.jpeg
+**/__pycache__
 
 **/.pytest_cache
