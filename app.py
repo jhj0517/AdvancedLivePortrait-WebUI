@@ -1,11 +1,13 @@
 import argparse
 import gradio as gr
 from gradio_i18n import Translate, gettext as _
+from gradio_rangeslider import RangeSlider
 
 from modules.live_portrait.live_portrait_inferencer import LivePortraitInferencer
 from modules.utils.paths import *
 from modules.utils.helper import str2bool
 from modules.utils.constants import *
+from modules.utils.video_helper import extract_frames, get_frames_from_dir
 
 
 class App:
@@ -54,6 +56,25 @@ class App:
             gr.Slider(label=_("First frame mouth alignment factor"), minimum=0, maximum=1, step=0.01, value=1),
             gr.Slider(label=_("Face Crop Factor"), minimum=1.5, maximum=2.5, step=0.1, value=2),
         ]
+
+    def on_keyframe_video_upload(
+        self,
+        vid_input: str,
+    ):
+        frames_dir = os.path.join(self.args.output_dir, "temp", "video_frames")
+        extract_frames(vid_input=vid_input,
+                       output_temp_dir=frames_dir)
+        frames = get_frames_from_dir(frames_dir)
+        return [
+            RangeSlider(label=_("Frame Selector"), value=(0, 0), minimum=0, maximum=len(frames), interactive=True),
+            gr.Gallery(show_label=False, rows=1, columns=len(frames), value=[[f, f"{i}"] for i, f in enumerate(frames)],
+                       visible=True)
+        ]
+
+    def on_keyframe_change(
+        self,
+    ):
+        pass
 
     def launch(self):
         with self.app:
@@ -110,6 +131,42 @@ class App:
                                 vid_out = gr.Video(label=_("Output Video"), scale=9)
                             with gr.Column(scale=1):
                                 btn_openfolder = gr.Button('📂')
+
+                        params = vid_params + [img_ref, vid_driven]
+
+                        btn_gen.click(
+                            fn=self.inferencer.create_video,
+                            inputs=params,
+                            outputs=vid_out
+                        )
+                        btn_openfolder.click(
+                            fn=lambda: self.open_folder(os.path.join(self.args.output_dir, "videos")),
+                            inputs=None, outputs=None
+                        )
+
+                    with gr.TabItem(_("Key Frame Editor")):
+                        with gr.Row():
+                            vid_animation = gr.Video(label=_("Animation Video"))
+                        with gr.Column():
+                            rsld_frame_selector = RangeSlider(label=_("Frame Selector"), value=(0, 0),
+                                                              interactive=False)
+                            gal_frames = gr.Gallery(show_label=False, rows=1, visible=False)
+                        with gr.Row(equal_height=True):
+                            with gr.Column(scale=9):
+                                img_out = gr.Image(label=_("Output Image"))
+                            with gr.Column(scale=1):
+                                expression_parameters = self.create_expression_parameters()
+                                with gr.Accordion("Opt in features", visible=False):
+                                    img_sample = gr.Image()
+                        with gr.Row():
+                            btn_gen = btn_gen = gr.Button(_("GENERATE"), variant="primary", scale=10)
+                            btn_openfolder = gr.Button('📂', scale=1)
+
+                        vid_animation.change(
+                            fn=self.on_keyframe_video_upload,
+                            inputs=[vid_animation],
+                            outputs=[rsld_frame_selector, gal_frames]
+                        )
 
                         params = vid_params + [img_ref, vid_driven]
 
