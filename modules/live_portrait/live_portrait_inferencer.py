@@ -1,17 +1,11 @@
 import logging
-import os
-import cv2
 import time
 import copy
 import dill
-import torch
 from ultralytics import YOLO
 import safetensors.torch
 import gradio as gr
-from gradio_i18n import Translate, gettext as _
 from ultralytics.utils import LOGGER as ultralytics_logger
-from enum import Enum
-from typing import Union, List, Dict, Tuple
 
 from modules.utils.paths import *
 from modules.utils.image_helper import *
@@ -27,6 +21,7 @@ from modules.live_portrait.warping_network import WarpingNetwork
 from modules.live_portrait.motion_extractor import MotionExtractor
 from modules.live_portrait.appearance_feature_extractor import AppearanceFeatureExtractor
 from modules.live_portrait.stitching_retargeting_network import StitchingRetargetingNetwork
+from modules.image_restoration.real_esrgan.real_esrgan_inferencer import RealESRGANInferencer
 
 
 class LivePortraitInferencer:
@@ -68,6 +63,11 @@ class LivePortraitInferencer:
         self.psi = None
         self.psi_list = None
         self.d_info = None
+
+        self.resrgan_inferencer = RealESRGANInferencer(
+            model_dir=os.path.join(self.model_dir, "RealESRGAN"),
+            output_dir=self.output_dir
+        )
 
     def load_models(self,
                     model_type: str = ModelType.HUMAN.value,
@@ -161,6 +161,7 @@ class LivePortraitInferencer:
                         sample_ratio: float = 1,
                         sample_parts: str = SamplePart.ALL.value,
                         crop_factor: float = 2.3,
+                        enable_image_restoration: bool = False,
                         src_image: Optional[str] = None,
                         sample_image: Optional[str] = None,) -> None:
         if isinstance(model_type, ModelType):
@@ -232,8 +233,11 @@ class LivePortraitInferencer:
                 out = np.clip(psi.mask_ori * crop_with_fullsize + (1 - psi.mask_ori) * psi.src_rgb, 0, 255).astype(np.uint8)
 
                 temp_out_img_path, out_img_path = get_auto_incremental_file_path(TEMP_DIR, "png"), get_auto_incremental_file_path(OUTPUTS_DIR, "png")
-                save_image(numpy_array=crop_out, output_path=temp_out_img_path)
-                save_image(numpy_array=out, output_path=out_img_path)
+                cropped_out_img_path = save_image(numpy_array=crop_out, output_path=temp_out_img_path)
+                out_img_path = save_image(numpy_array=out, output_path=out_img_path)
+
+                if enable_image_restoration:
+                    out = self.resrgan_inferencer.restore_image(out_img_path)
 
                 return out
         except Exception as e:
@@ -244,6 +248,7 @@ class LivePortraitInferencer:
                      retargeting_eyes: float = 1,
                      retargeting_mouth: float = 1,
                      crop_factor: float = 2.3,
+                     enable_image_restoration: bool = False,
                      src_image: Optional[str] = None,
                      driving_vid_path: Optional[str] = None,
                      progress: gr.Progress = gr.Progress()
@@ -317,11 +322,18 @@ class LivePortraitInferencer:
                         np.uint8)
 
                     out_frame_path = get_auto_incremental_file_path(os.path.join(self.output_dir, "temp", "video_frames", "out"), "png")
-                    save_image(out, out_frame_path)
+                    out_frame_path = save_image(out, out_frame_path)
+
+                    if enable_image_restoration:
+                        out_frame_path = self.resrgan_inferencer.restore_image(out_frame_path)
 
                     progress(i/total_length, desc=f"Generating frames {i}/{total_length} ..")
 
-                video_path = create_video_from_frames(TEMP_VIDEO_OUT_FRAMES_DIR, frame_rate=vid_info.frame_rate, output_dir=os.path.join(self.output_dir, "videos"))
+                video_path = create_video_from_frames(
+                    TEMP_VIDEO_OUT_FRAMES_DIR,
+                    frame_rate=vid_info.frame_rate,
+                    output_dir=os.path.join(self.output_dir, "videos")
+                )
 
                 return video_path
         except Exception as e:

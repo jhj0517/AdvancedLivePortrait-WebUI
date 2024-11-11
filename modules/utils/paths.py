@@ -2,9 +2,10 @@ import functools
 import os
 
 
-PROJECT_ROOT_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "..")
+PROJECT_ROOT_DIR = os.path.normpath(os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", ".."))
 MODELS_DIR = os.path.join(PROJECT_ROOT_DIR, "models")
 MODELS_ANIMAL_DIR = os.path.join(MODELS_DIR, "animal")
+MODELS_REAL_ESRGAN_DIR = os.path.join(MODELS_DIR, "RealESRGAN")
 OUTPUTS_DIR = os.path.join(PROJECT_ROOT_DIR, "outputs")
 OUTPUTS_VIDEOS_DIR = os.path.join(OUTPUTS_DIR, "videos")
 TEMP_DIR = os.path.join(OUTPUTS_DIR, "temp")
@@ -29,6 +30,9 @@ MODEL_ANIMAL_PATHS = {
     # Just animal detection model not the face, needs better model
     "yolo_v5s_animal_det": os.path.join(MODELS_ANIMAL_DIR, "yolo_v5s_animal_det.n2x")
 }
+MODEL_REAL_ESRGAN_PATH = {
+    "realesr-general-x4v3": os.path.join(MODELS_REAL_ESRGAN_DIR, "realesr-general-x4v3.pth")
+}
 MASK_TEMPLATES = os.path.join(PROJECT_ROOT_DIR, "modules", "utils", "resources", "mask_template.png")
 I18N_YAML_PATH = os.path.join(PROJECT_ROOT_DIR, "i18n", "translation.yaml")
 
@@ -52,6 +56,7 @@ def init_dirs():
     for dir_path in [
         MODELS_DIR,
         MODELS_ANIMAL_DIR,
+        MODELS_REAL_ESRGAN_DIR,
         OUTPUTS_DIR,
         EXP_OUTPUT_DIR,
         TEMP_DIR,

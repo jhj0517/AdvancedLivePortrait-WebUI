@@ -32,6 +32,8 @@ en: # English
   First frame mouth alignment factor: First frame mouth alignment factor
   First frame eyes alignment factor: First frame eyes alignment factor
   Face Crop Factor: Face Crop Factor
+  Enable Image Restoration: Enable Image Restoration
+  This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
 
 ko: # Korean
   Language: 언어
@@ -67,6 +69,8 @@ ko: # Korean
   First frame mouth alignment factor: 첫 프레임 입 반영 비율
   First frame eyes alignment factor: 첫 프레임 눈 반영 비율
   Face Crop Factor: 얼굴 크롭 비율
+  Enable Image Restoration: 화질 향상
+  This enables image restoration with RealESRGAN but slows down the speed: RealESRGAN 으로 화질을 향상 시킵니다. 속도는 느려집니다.
 
 ja: # Japanese
   Language: 言語
@@ -102,6 +106,8 @@ ja: # Japanese
   First frame mouth alignment factor: First frame mouth alignment factor
   First frame eyes alignment factor: First frame eyes alignment factor
   Face Crop Factor: Face Crop Factor
+  Enable Image Restoration: Enable Image Restoration
+  This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
 
 es: # Spanish
   Language: Idioma
@@ -137,6 +143,8 @@ es: # Spanish
   First frame mouth alignment factor: First frame mouth alignment factor
   First frame eyes alignment factor: First frame eyes alignment factor
   Face Crop Factor: Face Crop Factor
+  Enable Image Restoration: Enable Image Restoration
+  This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
 
 fr: # French
   Language: Langue
@@ -172,6 +180,8 @@ fr: # French
   First frame mouth alignment factor: First frame mouth alignment factor
   First frame eyes alignment factor: First frame eyes alignment factor
   Face Crop Factor: Face Crop Factor
+  Enable Image Restoration: Enable Image Restoration
+  This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
 
 de: # German
   Language: Sprache
@@ -207,6 +217,8 @@ de: # German
   First frame mouth alignment factor: First frame mouth alignment factor
   First frame eyes alignment factor: First frame eyes alignment factor
   Face Crop Factor: Face Crop Factor
+  Enable Image Restoration: Enable Image Restoration
+  This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
 
 zh: # Chinese
   Language: 语言
@@ -242,6 +254,8 @@ zh: # Chinese
   First frame mouth alignment factor: First frame mouth alignment factor
   First frame eyes alignment factor: First frame eyes alignment factor
   Face Crop Factor: Face Crop Factor
+  Enable Image Restoration: Enable Image Restoration
+  This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
 
 uk: # Ukrainian
   Language: Мова
@@ -277,6 +291,8 @@ uk: # Ukrainian
   First frame mouth alignment factor: First frame mouth alignment factor
   First frame eyes alignment factor: First frame eyes alignment factor
   Face Crop Factor: Face Crop Factor
+  Enable Image Restoration: Enable Image Restoration
+  This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
 
 ru: # Russian
   Language: Язык
@@ -312,6 +328,8 @@ ru: # Russian
   First frame mouth alignment factor: First frame mouth alignment factor
   First frame eyes alignment factor: First frame eyes alignment factor
   Face Crop Factor: Face Crop Factor
+  Enable Image Restoration: Enable Image Restoration
+  This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
 
 tr: # Turkish
   Language: Dil
@@ -347,3 +365,5 @@ tr: # Turkish
   First frame mouth alignment factor: First frame mouth alignment factor
   First frame eyes alignment factor: First frame eyes alignment factor
   Face Crop Factor: Face Crop Factor
+  Enable Image Restoration: Enable Image Restoration
+  This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed

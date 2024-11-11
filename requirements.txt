@@ -1,3 +1,4 @@
+# AdvancedLivePortrait
 --extra-index-url https://download.pytorch.org/whl/cu124
 torch
 torchvision
@@ -14,7 +15,6 @@ tyro
 dill
 gradio
 gradio-i18n
-
 
 # Tests
 # pytest

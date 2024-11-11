@@ -12,7 +12,7 @@ license: apache-2.0
 
 # AdvancedLivePortrait-WebUI
 
-Dedicated gradio based WebUI for [ComfyUI-AdvancedLivePortrait](https://github.com/PowerHouseMan/ComfyUI-AdvancedLivePortrait). 
+Dedicated gradio based WebUI started from [ComfyUI-AdvancedLivePortrait](https://github.com/PowerHouseMan/ComfyUI-AdvancedLivePortrait). 
 <br>You can edit the facial expression from the image.
 
 https://github.com/user-attachments/assets/cce42397-e898-4efb-9de8-735e050a10ce
@@ -64,7 +64,10 @@ docker compose -f docker/docker-compose.yaml up
 
 Update the [`docker-compose.yaml`](https://github.com/jhj0517/AdvancedLivePortrait-WebUI/blob/master/docker/docker-compose.yaml) to match your environment if you're not using an Nvidia GPU.
 
-## ❤️ Citation and Thanks
+### 🌐 Translation 
+Any PRs for language translation for [`translation.yaml`](https://github.com/jhj0517/AdvancedLivePortrait-WebUI/blob/master/i18n/translation.yaml) would be greatly appreciated!
+
+## ❤️ Acknowledgement
 1. LivePortrait paper comes from
 ```bibtex
 @article{guo2024liveportrait,
@@ -77,8 +80,6 @@ Update the [`docker-compose.yaml`](https://github.com/jhj0517/AdvancedLivePortra
 2. The models are safetensors that have been converted by kijai. : https://github.com/kijai/ComfyUI-LivePortraitKJ
 3. [ultralytics](https://github.com/ultralytics/ultralytics) is used to detect the face.
 4. This WebUI is started from [ComfyUI-AdvancedLivePortrait](https://github.com/PowerHouseMan/ComfyUI-AdvancedLivePortrait), various facial expressions like AAA, EEE, Eyebrow, Wink are found by PowerHouseMan.
-
-### 🌐 Translation 
-Any PRs for language translation for [`translation.yaml`](https://github.com/jhj0517/AdvancedLivePortrait-WebUI/blob/master/i18n/translation.yaml) would be greatly appreciated!
+5. [RealESRGAN](https://github.com/xinntao/Real-ESRGAN) is used for image restoration.
 
 
