@@ -15,6 +15,7 @@ tyro
 dill
 gradio
 gradio-i18n
+spaces
 
 # Tests
 # pytest
