@@ -262,7 +262,9 @@ class LivePortraitInferencer:
             vid_info = get_video_info(vid_input=driving_vid_path)
 
             if src_input is not None:
-                if id(src_input) != id(self.src_image) or self.crop_factor != crop_factor:
+                if is_video(src_input):
+                    create_video_from_frames()
+                else:
                     self.crop_factor = crop_factor
                     self.src_image = src_input
 
@@ -297,7 +299,7 @@ class LivePortraitInferencer:
 
                     if i < driving_length:
                         d_i_info = self.driving_values[i]
-                        d_i_r = torch.Tensor([d_i_info['pitch'], d_i_info['yaw'], d_i_info['roll']]) # .float().to(device="cuda:0")
+                        d_i_r = torch.Tensor([d_i_info['pitch'], d_i_info['yaw'], d_i_info['roll']])
 
                         if d_0_es is None:
                             d_0_es = ExpressionSet(erst = (d_i_info['exp'], d_i_r, d_i_info['scale'], d_i_info['t']))
