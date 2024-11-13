@@ -313,3 +313,9 @@ def clean_files_with_extension(dir_path: str, extensions: List):
                 os.remove(file_path)
             except Exception as e:
                 print("Error while removing image files")
+
+
+def is_video(file_path):
+    video_extensions = ['.mp4', '.mkv', '.avi', '.mov', '.flv', '.wmv', '.webm', '.m4v', '.mpeg', '.mpg', '.3gp']
+    extension = os.path.splitext(file_path)[1].lower()
+    return extension in video_extensions
