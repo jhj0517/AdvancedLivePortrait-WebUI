@@ -71,12 +71,13 @@ def image_path_to_array(image_path: str) -> np.ndarray:
 
 def copy_image(image_path: str, output_path: str):
     try:
-        shutil.copy(image_path, output_path)
+        with Image.open(image_path) as img:
+            img.save(output_path)
         return output_path
     except FileNotFoundError:
         print(f"Error: {image_path} not found.")
         raise
     except Exception as e:
-        print(f"An error occurred during copy")
+        print(f"An error occurred during copy: {e}")
         raise
 
