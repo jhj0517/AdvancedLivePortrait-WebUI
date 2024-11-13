@@ -24,7 +24,7 @@ class VideoInfo:
 
 def extract_frames(
     vid_input: str,
-    output_temp_dir: str = TEMP_VIDEO_FRAMES_DIR,
+    frames_dir: str = TEMP_VIDEO_FRAMES_DIR,
     start_number: int = 0,
     clean=True
 ):
@@ -32,10 +32,10 @@ def extract_frames(
     Extract frames as jpg files and save them into output_temp_dir. This needs FFmpeg installed.
     """
     if clean:
-        clean_temp_dir(temp_dir=output_temp_dir)
+        clean_temp_dir(temp_dir=frames_dir)
 
-    os.makedirs(output_temp_dir, exist_ok=True)
-    output_path = os.path.join(output_temp_dir, "%05d.jpg")
+    os.makedirs(frames_dir, exist_ok=True)
+    output_path = os.path.join(frames_dir, "%05d.jpg")
 
     command = [
         'ffmpeg',
@@ -50,12 +50,12 @@ def extract_frames(
 
     try:
         subprocess.run(command, check=True)
-        print(f"Video frames extracted to \"{os.path.normpath(output_temp_dir)}\"")
+        print(f"Video frames extracted to \"{os.path.normpath(frames_dir)}\"")
     except subprocess.CalledProcessError as e:
         print("Error occurred while extracting frames from the video")
         raise RuntimeError(f"An error occurred: {str(e)}")
 
-    return get_frames_from_dir(output_temp_dir)
+    return get_frames_from_dir(frames_dir)
 
 
 def extract_sound(
