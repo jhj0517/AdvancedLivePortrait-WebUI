@@ -1,6 +1,7 @@
 from PIL import Image
 import torch
 import numpy as np
+import shutil
 
 
 class PreparedSrcImg:
@@ -66,3 +67,16 @@ def image_path_to_array(image_path: str) -> np.ndarray:
         image_array = image_array[np.newaxis, ...]
 
     return image_array
+
+
+def copy_image(image_path: str, output_path: str):
+    try:
+        shutil.copy(image_path, output_path)
+        return output_path
+    except FileNotFoundError:
+        print(f"Error: {image_path} not found.")
+        raise
+    except Exception as e:
+        print(f"An error occurred during copy")
+        raise
+
