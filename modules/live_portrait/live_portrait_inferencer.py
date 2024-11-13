@@ -300,8 +300,9 @@ class LivePortraitInferencer:
 
             with torch.autocast(device_type=self.device, enabled=(self.device == "cuda")):
                 for i, (src_psi, driving_psi) in src_driven_mapping.items():
-                    s_info = src_psi.x_s_info
-                    s_es = ExpressionSet(erst=(s_info['kp'] + s_info['exp'], torch.Tensor([0, 0, 0]), s_info['scale'], s_info['t']))
+                    if i == 0:
+                        s_info = src_psi.x_s_info
+                        s_es = ExpressionSet(erst=(s_info['kp'] + s_info['exp'], torch.Tensor([0, 0, 0]), s_info['scale'], s_info['t']))
 
                     new_es = ExpressionSet(es=s_es)
 
