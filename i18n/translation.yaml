@@ -35,6 +35,10 @@ en: # English
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
   GENERATE VIDEO: GENERATE VIDEO
+  Reference Type: Reference Type
+  Reference Video: Reference Video
+  Image: Image
+  Video: Video
 
 ko: # Korean
   Language: 언어
@@ -73,6 +77,10 @@ ko: # Korean
   Enable Image Restoration: 화질 향상
   This enables image restoration with RealESRGAN but slows down the speed: RealESRGAN 으로 화질을 향상 시킵니다. 속도는 느려집니다.
   GENERATE VIDEO: 영상 생성
+  Reference Type: 참조 타입
+  Reference Video: 참조 영상
+  Image: 이미지
+  Video: 영상
 
 ja: # Japanese
   Language: 言語
@@ -111,6 +119,10 @@ ja: # Japanese
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
   GENERATE VIDEO: GENERATE VIDEO
+  Reference Type: Reference Type
+  Reference Video: Reference Video
+  Image: Image
+  Video: Video
 
 es: # Spanish
   Language: Idioma
@@ -149,6 +161,10 @@ es: # Spanish
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
   GENERATE VIDEO: GENERATE VIDEO
+  Reference Type: Reference Type
+  Reference Video: Reference Video
+  Image: Image
+  Video: Video
 
 fr: # French
   Language: Langue
@@ -187,6 +203,10 @@ fr: # French
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
   GENERATE VIDEO: GENERATE VIDEO
+  Reference Type: Reference Type
+  Reference Video: Reference Video
+  Image: Image
+  Video: Video
 
 de: # German
   Language: Sprache
@@ -225,6 +245,10 @@ de: # German
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
   GENERATE VIDEO: GENERATE VIDEO
+  Reference Type: Reference Type
+  Reference Video: Reference Video
+  Image: Image
+  Video: Video
 
 zh: # Chinese
   Language: 语言
@@ -263,6 +287,10 @@ zh: # Chinese
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
   GENERATE VIDEO: GENERATE VIDEO
+  Reference Type: Reference Type
+  Reference Video: Reference Video
+  Image: Image
+  Video: Video
 
 uk: # Ukrainian
   Language: Мова
@@ -301,6 +329,10 @@ uk: # Ukrainian
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
   GENERATE VIDEO: GENERATE VIDEO
+  Reference Type: Reference Type
+  Reference Video: Reference Video
+  Image: Image
+  Video: Video
 
 ru: # Russian
   Language: Язык
@@ -339,6 +371,10 @@ ru: # Russian
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
   GENERATE VIDEO: GENERATE VIDEO
+  Reference Type: Reference Type
+  Reference Video: Reference Video
+  Image: Image
+  Video: Video
 
 tr: # Turkish
   Language: Dil
@@ -377,3 +413,7 @@ tr: # Turkish
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
   GENERATE VIDEO: GENERATE VIDEO
+  Reference Type: Reference Type
+  Reference Video: Reference Video
+  Image: Image
+  Video: Video
