@@ -303,25 +303,38 @@ class LivePortraitInferencer:
 
             with torch.autocast(device_type=self.device, enabled=(self.device == "cuda")):
                 for i, (src_psi, driving_psi) in src_driven_mapping.items():
+                    if driving_psi is None:
+                        out_frame_dir = os.path.join(self.output_dir, "temp", "video_frames", "out")
+                        out_frame_path = get_auto_incremental_file_path(out_frame_dir, "png")
+                        out_frame_path = save_image(out, out_frame_path)
+
+                        if enable_image_restoration:
+                            out_frame_path = self.resrgan_inferencer.restore_image(out_frame_path)
+                        else:
+                            src_frame = reference_frames[i]
+                            out_frame_path = copy_image(src_frame, out_frame_path)
+
+                        progress(i / len(src_driven_mapping), desc=f"Use original frames {i}/{len(src_driven_mapping)} ..")
+                        continue
+
                     if i == 0:
                         s_info = src_psi.x_s_info
                         s_es = ExpressionSet(erst=(s_info['kp'] + s_info['exp'], torch.Tensor([0, 0, 0]), s_info['scale'], s_info['t']))
 
                     new_es = ExpressionSet(es=s_es)
 
-                    if driving_psi is not None:
-                        d_i_info = driving_psi
-                        d_i_r = torch.Tensor([d_i_info['pitch'], d_i_info['yaw'], d_i_info['roll']])
+                    d_i_info = driving_psi
+                    d_i_r = torch.Tensor([d_i_info['pitch'], d_i_info['yaw'], d_i_info['roll']])
 
-                        if d_0_es is None:
-                            d_0_es = ExpressionSet(erst=(d_i_info['exp'], d_i_r, d_i_info['scale'], d_i_info['t']))
+                    if d_0_es is None:
+                        d_0_es = ExpressionSet(erst=(d_i_info['exp'], d_i_r, d_i_info['scale'], d_i_info['t']))
 
-                            self.retargeting(s_es.e, d_0_es.e, retargeting_eyes, (11, 13, 15, 16))
-                            self.retargeting(s_es.e, d_0_es.e, retargeting_mouth, (14, 17, 19, 20))
+                        self.retargeting(s_es.e, d_0_es.e, retargeting_eyes, (11, 13, 15, 16))
+                        self.retargeting(s_es.e, d_0_es.e, retargeting_mouth, (14, 17, 19, 20))
 
-                        new_es.e += d_i_info['exp'] - d_0_es.e
-                        new_es.r += d_i_r - d_0_es.r
-                        new_es.t += d_i_info['t'] - d_0_es.t
+                    new_es.e += d_i_info['exp'] - d_0_es.e
+                    new_es.r += d_i_r - d_0_es.r
+                    new_es.t += d_i_info['t'] - d_0_es.t
 
                     r_new = get_rotation_matrix(
                         s_info['pitch'] + new_es.r[0], s_info['yaw'] + new_es.r[1], s_info['roll'] + new_es.r[2])
@@ -335,7 +348,8 @@ class LivePortraitInferencer:
                     out = np.clip(src_psi.mask_ori * crop_with_fullsize + (1 - src_psi.mask_ori) * src_psi.src_rgb, 0, 255).astype(
                         np.uint8)
 
-                    out_frame_path = get_auto_incremental_file_path(os.path.join(self.output_dir, "temp", "video_frames", "out"), "png")
+                    out_frame_dir = os.path.join(self.output_dir, "temp", "video_frames", "out")
+                    out_frame_path = get_auto_incremental_file_path(out_frame_dir, "png")
                     out_frame_path = save_image(out, out_frame_path)
 
                     if enable_image_restoration:
@@ -344,7 +358,7 @@ class LivePortraitInferencer:
                     progress(i/len(src_driven_mapping), desc=f"Generating frames {i}/{len(src_driven_mapping)} ..")
 
                 video_path = create_video_from_frames(
-                    TEMP_VIDEO_OUT_FRAMES_DIR,
+                    out_frame_dir,
                     frame_rate=vid_info.frame_rate,
                     output_dir=os.path.join(self.output_dir, "videos")
                 )
