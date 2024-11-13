@@ -272,7 +272,7 @@ class LivePortraitInferencer:
 
             if isinstance(src_input, np.ndarray) or (isinstance(src_input, str) and not is_video(src_input)):
                 progress(0, "Pre processing source image...")
-                src_psi_list = [self.prepare_source(src_input, crop_factor)]*len(driving_images)
+                src_psi_list = [self.prepare_source(src_input, crop_factor)] * len(driving_images)
                 vid_info = get_video_info(vid_input=driving_vid_path)
                 progress(0, "Pre processing source image has done.")
             elif isinstance(src_input, str) and is_video(src_input):
