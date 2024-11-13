@@ -18,6 +18,8 @@ class App:
             model_dir=args.model_dir if args else MODELS_DIR,
             output_dir=args.output_dir if args else OUTPUTS_DIR
         )
+        self.source_types = ["image", "video"]
+        self.default_source = self.source_types[0]
 
     @staticmethod
     def create_expression_parameters():
@@ -59,6 +61,14 @@ class App:
                         info=_("This enables image restoration with RealESRGAN but slows down the speed"), value=False)
         ]
 
+    @staticmethod
+    def on_source_type_change(source_type: str):
+        return [
+            gr.Image(label=_("Reference Image"), visible=source_type == "image"),
+            gr.Video(label=_("Reference Video"), visible=source_type != "image"),
+            gr.Button("GENERATE", visible=source_type != "image")
+        ]
+
     def launch(self):
         with self.app:
             with self.i18n:
@@ -68,13 +78,16 @@ class App:
                     with gr.TabItem(_("Expression Editor")):
                         with gr.Row():
                             with gr.Column():
-                                img_ref = gr.Image(label=_("Reference Image"))
+                                img_ref = gr.Image(label=_("Reference Image"), visible=self.default_source == "image")
+                                vid_ref = gr.Video(label=_("Reference Video"), visible=self.default_source != "image")
                         with gr.Row():
-                            btn_gen = gr.Button("GENERATE", visible=False)
+                            btn_gen = gr.Button("GENERATE", visible=self.default_source != "image")
                         with gr.Row(equal_height=True):
                             with gr.Column(scale=9):
                                 img_out = gr.Image(label=_("Output Image"))
                             with gr.Column(scale=1):
+                                dd_src_type = gr.Dropdown(label=_("Source Type"), choices=self.source_types,
+                                                          value=self.default_source)
                                 expression_parameters = self.create_expression_parameters()
                                 btn_openfolder = gr.Button('📂')
                                 with gr.Accordion("Opt in features", visible=False):
@@ -92,6 +105,11 @@ class App:
                             queue=True
                         )
 
+                        dd_src_type.change(
+                            fn=self.on_source_type_change,
+                            inputs=[dd_src_type],
+                            outputs=[img_ref, vid_ref, btn_gen]
+                        )
                         btn_openfolder.click(
                             fn=lambda: self.open_folder(self.args.output_dir), inputs=None, outputs=None
                         )
@@ -102,7 +120,8 @@ class App:
 
                     with gr.TabItem(_("Video Driven")):
                         with gr.Row():
-                            img_ref = gr.Image(label=_("Reference Image"))
+                            img_ref = gr.Image(label=_("Reference Image"), visible=self.default_source == "image")
+                            vid_ref = gr.Video(label=_("Reference Video"), visible=self.default_source != "image")
                             vid_driven = gr.Video(label=_("Expression Video"))
                             with gr.Column():
                                 vid_params = self.create_video_parameters()
