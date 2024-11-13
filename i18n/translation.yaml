@@ -34,6 +34,7 @@ en: # English
   Face Crop Factor: Face Crop Factor
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
+  GENERATE VIDEO: GENERATE VIDEO
 
 ko: # Korean
   Language: 언어
@@ -71,6 +72,7 @@ ko: # Korean
   Face Crop Factor: 얼굴 크롭 비율
   Enable Image Restoration: 화질 향상
   This enables image restoration with RealESRGAN but slows down the speed: RealESRGAN 으로 화질을 향상 시킵니다. 속도는 느려집니다.
+  GENERATE VIDEO: 영상 생성
 
 ja: # Japanese
   Language: 言語
@@ -108,6 +110,7 @@ ja: # Japanese
   Face Crop Factor: Face Crop Factor
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
+  GENERATE VIDEO: GENERATE VIDEO
 
 es: # Spanish
   Language: Idioma
@@ -145,6 +148,7 @@ es: # Spanish
   Face Crop Factor: Face Crop Factor
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
+  GENERATE VIDEO: GENERATE VIDEO
 
 fr: # French
   Language: Langue
@@ -182,6 +186,7 @@ fr: # French
   Face Crop Factor: Face Crop Factor
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
+  GENERATE VIDEO: GENERATE VIDEO
 
 de: # German
   Language: Sprache
@@ -219,6 +224,7 @@ de: # German
   Face Crop Factor: Face Crop Factor
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
+  GENERATE VIDEO: GENERATE VIDEO
 
 zh: # Chinese
   Language: 语言
@@ -256,6 +262,7 @@ zh: # Chinese
   Face Crop Factor: Face Crop Factor
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
+  GENERATE VIDEO: GENERATE VIDEO
 
 uk: # Ukrainian
   Language: Мова
@@ -293,6 +300,7 @@ uk: # Ukrainian
   Face Crop Factor: Face Crop Factor
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
+  GENERATE VIDEO: GENERATE VIDEO
 
 ru: # Russian
   Language: Язык
@@ -330,6 +338,7 @@ ru: # Russian
   Face Crop Factor: Face Crop Factor
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
+  GENERATE VIDEO: GENERATE VIDEO
 
 tr: # Turkish
   Language: Dil
@@ -367,3 +376,4 @@ tr: # Turkish
   Face Crop Factor: Face Crop Factor
   Enable Image Restoration: Enable Image Restoration
   This enables image restoration with RealESRGAN but slows down the speed: This enables image restoration with RealESRGAN but slows down the speed
+  GENERATE VIDEO: GENERATE VIDEO
