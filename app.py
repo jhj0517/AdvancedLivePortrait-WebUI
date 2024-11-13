@@ -135,9 +135,9 @@ class App:
 
                     with gr.TabItem(_("Video Driven")):
                         with gr.Row():
-                            img_ref = gr.Image(label=_("Reference Image"),
+                            img_ref = gr.Image(label=_("Reference Image"), interactive=True,
                                                visible=self.default_reference == ReferenceType.IMAGE.value)
-                            vid_ref = gr.Video(label=_("Reference Video"),
+                            vid_ref = gr.Video(label=_("Reference Video"), interactive=True,
                                                visible=self.default_reference != ReferenceType.IMAGE.value)
                             vid_driven = gr.Video(label=_("Expression Video"))
                             with gr.Column():
