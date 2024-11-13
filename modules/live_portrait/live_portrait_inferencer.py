@@ -249,7 +249,7 @@ class LivePortraitInferencer:
                      retargeting_mouth: float = 1,
                      crop_factor: float = 2.3,
                      enable_image_restoration: bool = False,
-                     src_image: Optional[str] = None,
+                     src_input: Optional[str] = None,
                      driving_vid_path: Optional[str] = None,
                      progress: gr.Progress = gr.Progress()
                      ):
@@ -261,12 +261,12 @@ class LivePortraitInferencer:
         try:
             vid_info = get_video_info(vid_input=driving_vid_path)
 
-            if src_image is not None:
-                if id(src_image) != id(self.src_image) or self.crop_factor != crop_factor:
+            if src_input is not None:
+                if id(src_input) != id(self.src_image) or self.crop_factor != crop_factor:
                     self.crop_factor = crop_factor
-                    self.src_image = src_image
+                    self.src_image = src_input
 
-                    self.psi_list = [self.prepare_source(src_image, crop_factor)]
+                    self.psi_list = [self.prepare_source(src_input, crop_factor)]
 
             progress(0, desc="Extracting frames from the video..")
             driving_images, vid_sound = extract_frames(driving_vid_path, os.path.join(self.output_dir, "temp", "video_frames")), extract_sound(driving_vid_path)
