@@ -36,6 +36,7 @@ class LivePortraitInferencer:
             os.path.join(self.output_dir, "temp"),
             os.path.join(self.output_dir, "temp", "video_frames"),
             os.path.join(self.output_dir, "temp", "video_frames", "out"),
+            os.path.join(self.output_dir, "temp", "video_frames", "reference"),
         ]
         for dir_path in relative_dirs:
             os.makedirs(dir_path, exist_ok=True)
@@ -263,7 +264,8 @@ class LivePortraitInferencer:
 
             if src_input is not None:
                 if is_video(src_input):
-                    create_video_from_frames()
+                    frames = extract_frames(vid_input=src_input)
+
                 else:
                     self.crop_factor = crop_factor
                     self.src_image = src_input
