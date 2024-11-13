@@ -72,7 +72,7 @@ class App:
         return [
             gr.Image(label=_("Reference Image"), visible=source_type == ReferenceType.IMAGE.value),
             gr.Video(label=_("Reference Video"), visible=source_type != ReferenceType.IMAGE.value),
-            gr.Button("GENERATE VIDEO", visible=source_type != ReferenceType.IMAGE.value)
+            gr.Button(_("GENERATE VIDEO"), visible=source_type != ReferenceType.IMAGE.value)
         ]
 
     @staticmethod
