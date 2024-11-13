@@ -9,7 +9,7 @@ from modules.utils.helper import str2bool
 from modules.utils.constants import *
 
 
-class SourceType(Enum):
+class ReferenceType(Enum):
     IMAGE = _("Image")
     VIDEO = _("Video")
 
@@ -24,8 +24,8 @@ class App:
             model_dir=args.model_dir if args else MODELS_DIR,
             output_dir=args.output_dir if args else OUTPUTS_DIR
         )
-        self.source_types = [src.value for src in SourceType]
-        self.default_source = self.source_types[0]
+        self.reference_types = [src.value for src in ReferenceType]
+        self.default_reference = self.reference_types[0]
 
     @staticmethod
     def create_expression_parameters():
@@ -70,16 +70,16 @@ class App:
     @staticmethod
     def on_source_type_change_expression(source_type: str):
         return [
-            gr.Image(label=_("Reference Image"), visible=source_type == SourceType.IMAGE.value),
-            gr.Video(label=_("Reference Video"), visible=source_type != SourceType.IMAGE.value),
-            gr.Button("GENERATE", visible=source_type != SourceType.IMAGE.value)
+            gr.Image(label=_("Reference Image"), visible=source_type == ReferenceType.IMAGE.value),
+            gr.Video(label=_("Reference Video"), visible=source_type != ReferenceType.IMAGE.value),
+            gr.Button("GENERATE VIDEO", visible=source_type != ReferenceType.IMAGE.value)
         ]
 
     @staticmethod
     def on_source_type_change_vid_driven(source_type: str):
         return [
-            gr.Image(label=_("Reference Image"), visible=source_type == SourceType.IMAGE.value),
-            gr.Video(label=_("Reference Video"), visible=source_type != SourceType.IMAGE.value),
+            gr.Image(label=_("Reference Image"), visible=source_type == ReferenceType.IMAGE.value),
+            gr.Video(label=_("Reference Video"), visible=source_type != ReferenceType.IMAGE.value),
         ]
 
     def launch(self):
@@ -92,17 +92,17 @@ class App:
                         with gr.Row():
                             with gr.Column():
                                 img_ref = gr.Image(label=_("Reference Image"),
-                                                   visible=self.default_source == SourceType.IMAGE.value)
+                                                   visible=self.default_reference == ReferenceType.IMAGE.value)
                                 vid_ref = gr.Video(label=_("Reference Video"), interactive=True,
-                                                   visible=self.default_source != SourceType.IMAGE.value)
+                                                   visible=self.default_reference != ReferenceType.IMAGE.value)
                         with gr.Row(equal_height=True):
                             with gr.Column(scale=9):
                                 img_out = gr.Image(label=_("Output Image"))
                                 btn_gen = gr.Button(_("GENERATE VIDEO"), variant="primary", scale=0, min_width=5000,
-                                                    visible=self.default_source != SourceType.IMAGE.value)
+                                                    visible=self.default_reference != ReferenceType.IMAGE.value)
                             with gr.Column(scale=1):
-                                dd_src_type = gr.Dropdown(label=_("Source Type"), choices=self.source_types,
-                                                          value=self.default_source)
+                                dd_src_type = gr.Dropdown(label=_("Reference Type"), choices=self.reference_types,
+                                                          value=self.default_reference)
                                 expression_parameters = self.create_expression_parameters()
                                 btn_openfolder = gr.Button('📂')
                                 with gr.Accordion("Opt in features", visible=False):
@@ -136,13 +136,13 @@ class App:
                     with gr.TabItem(_("Video Driven")):
                         with gr.Row():
                             img_ref = gr.Image(label=_("Reference Image"),
-                                               visible=self.default_source == SourceType.IMAGE.value)
+                                               visible=self.default_reference == ReferenceType.IMAGE.value)
                             vid_ref = gr.Video(label=_("Reference Video"),
-                                               visible=self.default_source != SourceType.IMAGE.value)
+                                               visible=self.default_reference != ReferenceType.IMAGE.value)
                             vid_driven = gr.Video(label=_("Expression Video"))
                             with gr.Column():
-                                dd_src_type = gr.Dropdown(label=_("Source Type"), choices=self.source_types,
-                                                          value=self.default_source)
+                                dd_src_type = gr.Dropdown(label=_("Reference Type"), choices=self.reference_types,
+                                                          value=self.default_reference)
                                 vid_params = self.create_video_parameters()
 
                         with gr.Row():
