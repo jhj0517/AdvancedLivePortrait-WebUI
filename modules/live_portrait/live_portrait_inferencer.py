@@ -270,12 +270,15 @@ class LivePortraitInferencer:
 
             driving_psi_list = self.prepare_driving_video(driving_images)
 
-            if isinstance(src_input, np.ndarray) or (isinstance(src_input, str) and not is_video(src_input)):
+            is_src_image = isinstance(src_input, np.ndarray) or (isinstance(src_input, str) and not is_video(src_input))
+            is_src_video = isinstance(src_input, str) and is_video(src_input)
+
+            if is_src_image:
                 progress(0, "Pre processing source image...")
                 src_psi_list = [self.prepare_source(src_input, crop_factor)] * len(driving_images)
                 vid_info = get_video_info(vid_input=driving_vid_path)
                 progress(0, "Pre processing source image has done.")
-            elif isinstance(src_input, str) and is_video(src_input):
+            elif is_src_video:
                 progress(0, desc="Extracting frames from the reference video..")
                 reference_frames, vid_sound = extract_frames(src_input, src_frame_dir), extract_sound(src_input)
                 progress(0, "Pre processing source video...")
