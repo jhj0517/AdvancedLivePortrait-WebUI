@@ -9,7 +9,7 @@ from modules.config.inference_config import InferenceConfig
 class LivePortraitWrapper(object):
 
     def __init__(self, cfg: InferenceConfig, appearance_feature_extractor, motion_extractor,
-                                            warping_module, spade_generator, stitching_retargeting_module):
+                 warping_module, spade_generator, stitching_retargeting_module):
 
         self.appearance_feature_extractor = appearance_feature_extractor
         self.motion_extractor = motion_extractor
