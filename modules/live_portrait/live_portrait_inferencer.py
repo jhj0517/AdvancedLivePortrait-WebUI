@@ -58,11 +58,8 @@ class LivePortraitInferencer:
         self.src_image = None
         self.src_image_list = None
         self.sample_image = None
-        self.driving_images = None
-        self.driving_values = None
         self.crop_factor = None
         self.psi = None
-        self.psi_list = None
         self.d_info = None
 
         self.resrgan_inferencer = RealESRGANInferencer(
@@ -260,51 +257,61 @@ class LivePortraitInferencer:
             )
 
         try:
-            vid_info = get_video_info(vid_input=driving_vid_path)
+            if src_input is None or driving_vid_path is None:
+                raise ValueError("Driving expression video and source input to apply facial expression is not provided.")
+            src_frame_dir, driving_frame_dir = os.path.join(self.output_dir, "temp", "video_frames", "reference"), os.path.join(self.output_dir, "temp", "video_frames")
 
-            if src_input is not None:
-                if is_video(src_input):
-                    frames = extract_frames(vid_input=src_input)
+            progress(0, desc="Extracting frames from the driving video..")
+            driving_images, vid_sound = extract_frames(driving_vid_path, driving_frame_dir), extract_sound(driving_vid_path)
 
+            if not driving_images:
+                print("Failed to extract frames from driving expression video")
+                raise
+
+            driving_psi_list = self.prepare_driving_video(driving_images)
+
+            if isinstance(src_input, np.ndarray) or (isinstance(src_input, str) and not is_video(src_input)):
+                gr.Progress(0, "Pre processing source image...")
+                src_psi_list = [self.prepare_source(src_input, crop_factor)]*len(driving_images)
+                vid_info = get_video_info(vid_input=driving_vid_path)
+                gr.Progress(0, "Pre processing source image has done.")
+            elif isinstance(src_input, str) and is_video(src_input):
+                progress(0, desc="Extracting frames from the reference video..")
+                reference_frames, vid_sound = extract_frames(src_input, src_frame_dir), extract_sound(src_input)
+                gr.Progress(0, "Pre processing source video...")
+                src_psi_list = [self.prepare_source(frame, crop_factor) for frame in reference_frames]
+                vid_info = get_video_info(vid_input=src_input)
+                gr.Progress(0, "Pre processing source video has done.")
+            else:
+                raise ValueError("Source input must be path of the media file or np.ndarray for the image. the "
+                                 f"given type is : {type(src_input)}")
+
+            src_driven_mapping = dict()
+            for idx, src_psi in enumerate(src_psi_list):
+                if idx < len(driving_psi_list):
+                    driving_psi = driving_psi_list[idx]
                 else:
-                    self.crop_factor = crop_factor
-                    self.src_image = src_input
-
-                    self.psi_list = [self.prepare_source(src_input, crop_factor)]
-
-            progress(0, desc="Extracting frames from the video..")
-            driving_images, vid_sound = extract_frames(driving_vid_path, os.path.join(self.output_dir, "temp", "video_frames")), extract_sound(driving_vid_path)
-
-            driving_length = 0
-            if driving_images is not None:
-                if id(driving_images) != id(self.driving_images):
-                    self.driving_images = driving_images
-                    self.driving_values = self.prepare_driving_video(driving_images)
-                driving_length = len(self.driving_values)
-
-            total_length = len(driving_images)
+                    driving_psi = None
+                src_driven_mapping[idx] = (src_psi, driving_psi)
 
             c_i_es = ExpressionSet()
             c_o_es = ExpressionSet()
             d_0_es = None
 
-            psi = None
             with torch.autocast(device_type=self.device, enabled=(self.device == "cuda")):
-                for i in range(total_length):
-
+                for i, (src_psi, driving_psi) in src_driven_mapping.items():
                     if i == 0:
-                        psi = self.psi_list[i]
-                        s_info = psi.x_s_info
+                        s_info = src_psi.x_s_info
                         s_es = ExpressionSet(erst=(s_info['kp'] + s_info['exp'], torch.Tensor([0, 0, 0]), s_info['scale'], s_info['t']))
 
                     new_es = ExpressionSet(es=s_es)
 
-                    if i < driving_length:
-                        d_i_info = self.driving_values[i]
+                    if driving_psi is not None:
+                        d_i_info = driving_psi
                         d_i_r = torch.Tensor([d_i_info['pitch'], d_i_info['yaw'], d_i_info['roll']])
 
                         if d_0_es is None:
-                            d_0_es = ExpressionSet(erst = (d_i_info['exp'], d_i_r, d_i_info['scale'], d_i_info['t']))
+                            d_0_es = ExpressionSet(erst=(d_i_info['exp'], d_i_r, d_i_info['scale'], d_i_info['t']))
 
                             self.retargeting(s_es.e, d_0_es.e, retargeting_eyes, (11, 13, 15, 16))
                             self.retargeting(s_es.e, d_0_es.e, retargeting_mouth, (14, 17, 19, 20))
@@ -316,13 +323,13 @@ class LivePortraitInferencer:
                     r_new = get_rotation_matrix(
                         s_info['pitch'] + new_es.r[0], s_info['yaw'] + new_es.r[1], s_info['roll'] + new_es.r[2])
                     d_new = new_es.s * (new_es.e @ r_new) + new_es.t
-                    d_new = self.pipeline.stitching(psi.x_s_user, d_new)
-                    crop_out = self.pipeline.warp_decode(psi.f_s_user, psi.x_s_user, d_new)
+                    d_new = self.pipeline.stitching(src_psi.x_s_user, d_new)
+                    crop_out = self.pipeline.warp_decode(src_psi.f_s_user, src_psi.x_s_user, d_new)
                     crop_out = self.pipeline.parse_output(crop_out['out'])[0]
 
-                    crop_with_fullsize = cv2.warpAffine(crop_out, psi.crop_trans_m, get_rgb_size(psi.src_rgb),
+                    crop_with_fullsize = cv2.warpAffine(crop_out, src_psi.crop_trans_m, get_rgb_size(src_psi.src_rgb),
                                                         cv2.INTER_LINEAR)
-                    out = np.clip(psi.mask_ori * crop_with_fullsize + (1 - psi.mask_ori) * psi.src_rgb, 0, 255).astype(
+                    out = np.clip(src_psi.mask_ori * crop_with_fullsize + (1 - src_psi.mask_ori) * src_psi.src_rgb, 0, 255).astype(
                         np.uint8)
 
                     out_frame_path = get_auto_incremental_file_path(os.path.join(self.output_dir, "temp", "video_frames", "out"), "png")
@@ -331,7 +338,7 @@ class LivePortraitInferencer:
                     if enable_image_restoration:
                         out_frame_path = self.resrgan_inferencer.restore_image(out_frame_path)
 
-                    progress(i/total_length, desc=f"Generating frames {i}/{total_length} ..")
+                    progress(i/len(src_driven_mapping), desc=f"Generating frames {i}/{len(src_driven_mapping)} ..")
 
                 video_path = create_video_from_frames(
                     TEMP_VIDEO_OUT_FRAMES_DIR,
