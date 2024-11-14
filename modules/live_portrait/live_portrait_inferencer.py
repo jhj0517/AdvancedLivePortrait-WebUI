@@ -162,6 +162,9 @@ class LivePortraitInferencer:
                         crop_factor: float = 2.3,
                         enable_image_restoration: bool = False,
                         sample_image: Optional[str] = None,) -> None:
+        if src_input is None:
+            raise ValueError("Source input to apply facial expression is not provided. It must be image or video.")
+
         if isinstance(model_type, ModelType):
             model_type = model_type.value
         if model_type not in [mode.value for mode in ModelType]:
@@ -176,17 +179,9 @@ class LivePortraitInferencer:
             with torch.autocast(device_type=self.device, enabled=(self.device == "cuda")):
                 rotate_yaw = -rotate_yaw
 
-                if src_input is not None:
-                    if id(src_input) != id(self.src_image) or self.crop_factor != crop_factor:
-                        self.crop_factor = crop_factor
-                        self.psi = self.prepare_source(src_input, crop_factor)
-                        self.src_image = src_input
-                else:
-                    return None
+                psi = self.prepare_source(src_input, crop_factor)
 
-                psi = self.psi
                 s_info = psi.x_s_info
-                #delta_new = copy.deepcopy()
                 s_exp = s_info['exp'] * src_ratio
                 s_exp[0, 5] = s_info['exp'][0, 5]
                 s_exp += s_info['kp']
@@ -274,7 +269,7 @@ class LivePortraitInferencer:
             )
 
         try:
-            if not src_input or not driving_vid_path:
+            if src_input is None or driving_vid_path is None:
                 raise ValueError("Driving expression video and source input to apply facial expression is not provided.")
             src_frame_dir, driving_frame_dir = os.path.join(self.output_dir, "temp", "video_frames", "reference"), os.path.join(self.output_dir, "temp", "video_frames")
 
