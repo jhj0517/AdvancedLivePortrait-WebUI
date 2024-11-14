@@ -2,6 +2,7 @@ from PIL import Image
 import torch
 import numpy as np
 import shutil
+import hashlib
 
 
 class PreparedSrcImg:
@@ -80,4 +81,16 @@ def copy_image(image_path: str, output_path: str):
     except Exception as e:
         print(f"An error occurred during copy: {e}")
         raise
+
+
+def calculate_hash(file_path: str):
+    hasher = hashlib.md5()
+    with open(file_path, 'rb') as f:
+        buf = f.read()
+        hasher.update(buf)
+    return hasher.hexdigest()
+
+
+def are_files_same(path1: str, path2: str):
+    return calculate_hash(path1) == calculate_hash(path2)
 
