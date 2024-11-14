@@ -142,7 +142,7 @@ class LivePortraitInferencer:
         self.detect_model = YOLO(MODEL_PATHS[det_model_name]).to(self.device)
 
     def edit_expression(self,
-                        src_image: Optional[str] = None,
+                        src_input: Optional[str] = None,
                         model_type: str = ModelType.HUMAN.value,
                         rotate_pitch: float = 0,
                         rotate_yaw: float = 0,
@@ -176,11 +176,11 @@ class LivePortraitInferencer:
             with torch.autocast(device_type=self.device, enabled=(self.device == "cuda")):
                 rotate_yaw = -rotate_yaw
 
-                if src_image is not None:
-                    if id(src_image) != id(self.src_image) or self.crop_factor != crop_factor:
+                if src_input is not None:
+                    if id(src_input) != id(self.src_image) or self.crop_factor != crop_factor:
                         self.crop_factor = crop_factor
-                        self.psi = self.prepare_source(src_image, crop_factor)
-                        self.src_image = src_image
+                        self.psi = self.prepare_source(src_input, crop_factor)
+                        self.src_image = src_input
                 else:
                     return None
 
