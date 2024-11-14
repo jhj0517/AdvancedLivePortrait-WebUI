@@ -241,6 +241,23 @@ class LivePortraitInferencer:
         except Exception as e:
             raise
 
+    def edit_expression_gradio(self,
+                               src_type: Optional[str] = None,
+                               src_img: Optional[str] = None,
+                               src_vid: Optional[str] = None,
+                               *args
+                               ):
+        if src_type == ReferenceType.IMAGE.value:
+            return self.edit_expression(
+                src_img,
+                *args,
+            )
+        elif src_type == ReferenceType.VIDEO.value:
+            return self.edit_expression(
+                src_vid,
+                *args,
+            )
+
     def create_video(self,
                      src_input: Optional[str] = None,
                      driving_vid_path: Optional[str] = None,
