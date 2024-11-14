@@ -79,7 +79,8 @@ class RealESRGANInferencer:
                       model_name: Optional[str] = None,
                       scale: int = 1,
                       half_precision: Optional[bool] = None,
-                      overwrite: bool = True):
+                      overwrite: bool = True,
+                      return_numpy: bool = False):
         model_config = {
             "model_name": self.model_config["model_name"],
             "scale": scale,
@@ -99,6 +100,9 @@ class RealESRGANInferencer:
                 output, img_mode = self.model.enhance(img_path, outscale=scale)
             if img_mode == "RGB":
                 output = cv2.cvtColor(output, cv2.COLOR_RGB2BGR)
+
+            if return_numpy:
+                return output
 
             if overwrite:
                 output_path = img_path
