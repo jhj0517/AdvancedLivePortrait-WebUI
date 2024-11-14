@@ -177,9 +177,9 @@ class LivePortraitInferencer:
 
         try:
             with torch.autocast(device_type=self.device, enabled=(self.device == "cuda")):
-                rotate_yaw = -rotate_yaw
-
                 psi = self.prepare_source(src_input, crop_factor)
+
+                rotate_yaw = -rotate_yaw
 
                 s_info = psi.x_s_info
                 s_exp = s_info['exp'] * src_ratio
@@ -282,7 +282,7 @@ class LivePortraitInferencer:
 
             driving_psi_list = self.prepare_driving_video(driving_images)
 
-            is_src_image = isinstance(src_input, np.ndarray) or (isinstance(src_input, str) and not is_video(src_input))
+            is_src_image = isinstance(src_input, np.ndarray) or is_image(src_input)
             is_src_video = isinstance(src_input, str) and is_video(src_input)
 
             if is_src_image:
