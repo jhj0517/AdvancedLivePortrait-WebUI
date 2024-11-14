@@ -275,8 +275,8 @@ class LivePortraitInferencer:
         for i, frame in enumerate(reference_frames):
             edited_out = self.edit_expression(
                 frame,
-                False,
-                *args
+                True,
+                *args,
             )
             temp_out_img_path = get_auto_incremental_file_path(out_frame_dir, "png")
             temp_out_img_path = save_image(numpy_array=edited_out, output_path=temp_out_img_path)

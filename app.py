@@ -67,7 +67,11 @@ class App:
         return [
             gr.Image(label=_("Reference Image"), visible=source_type == ReferenceType.IMAGE.value),
             gr.Video(label=_("Reference Video"), visible=source_type != ReferenceType.IMAGE.value),
-            gr.Button(_("GENERATE VIDEO"), visible=source_type != ReferenceType.IMAGE.value)
+            gr.Button(_("GENERATE VIDEO"), visible=source_type != ReferenceType.IMAGE.value),
+            gr.Image(label=_("Output Image"),
+                     visible=True),
+            gr.Video(label=_("Output Video"),
+                     visible=source_type == ReferenceType.VIDEO.value)
         ]
 
     @staticmethod
@@ -89,10 +93,13 @@ class App:
                                 img_ref = gr.Image(label=_("Reference Image"),
                                                    visible=self.default_reference == ReferenceType.IMAGE.value)
                                 vid_ref = gr.Video(label=_("Reference Video"), interactive=True,
-                                                   visible=self.default_reference != ReferenceType.IMAGE.value)
+                                                   visible=self.default_reference == ReferenceType.VIDEO.value)
+                                cb_np = gr.Checkbox(value=False, visible=False)
                         with gr.Row(equal_height=True):
                             with gr.Column(scale=9):
                                 img_out = gr.Image(label=_("Output Image"))
+                                vid_out = gr.Video(label=_("Output Video"),
+                                                   visible=self.default_reference == ReferenceType.VIDEO.value)
                                 btn_gen = gr.Button(_("GENERATE VIDEO"), variant="primary", scale=0, min_width=5000,
                                                     visible=self.default_reference != ReferenceType.IMAGE.value)
                             with gr.Column(scale=1):
@@ -103,7 +110,7 @@ class App:
                                 with gr.Accordion("Opt in features", visible=False):
                                     img_sample = gr.Image()
 
-                        params = [img_ref] + expression_parameters
+                        params = [img_ref, cb_np] + expression_parameters
                         opt_in_features_params = [img_sample]
 
                         gr.on(
@@ -115,10 +122,18 @@ class App:
                             queue=True
                         )
 
+                        vid_gen_params = [vid_ref] + expression_parameters
+                        opt_in_features_params = [img_sample]
+                        btn_gen.click(
+                            fn=self.inferencer.edit_expression_video,
+                            inputs=vid_gen_params + opt_in_features_params,
+                            outputs=vid_out,
+                        )
+
                         dd_src_type.change(
                             fn=self.on_source_type_change_expression,
                             inputs=[dd_src_type],
-                            outputs=[img_ref, vid_ref, btn_gen]
+                            outputs=[img_ref, vid_ref, btn_gen, img_out, vid_out]
                         )
                         btn_openfolder.click(
                             fn=lambda: self.open_folder(self.args.output_dir), inputs=None, outputs=None
