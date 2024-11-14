@@ -103,7 +103,7 @@ class App:
                                 with gr.Accordion("Opt in features", visible=False):
                                     img_sample = gr.Image()
 
-                        params = expression_parameters + [img_ref]
+                        params = [img_ref] + expression_parameters
                         opt_in_features_params = [img_sample]
 
                         gr.on(
@@ -148,7 +148,7 @@ class App:
                             with gr.Column(scale=1):
                                 btn_openfolder = gr.Button('📂')
 
-                        params = vid_params + [img_ref, vid_driven]
+                        params = [img_ref, vid_driven] + vid_params
 
                         btn_gen.click(
                             fn=self.inferencer.create_video,

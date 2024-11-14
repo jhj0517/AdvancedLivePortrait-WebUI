@@ -142,6 +142,7 @@ class LivePortraitInferencer:
         self.detect_model = YOLO(MODEL_PATHS[det_model_name]).to(self.device)
 
     def edit_expression(self,
+                        src_image: Optional[str] = None,
                         model_type: str = ModelType.HUMAN.value,
                         rotate_pitch: float = 0,
                         rotate_yaw: float = 0,
@@ -160,7 +161,6 @@ class LivePortraitInferencer:
                         sample_parts: str = SamplePart.ALL.value,
                         crop_factor: float = 2.3,
                         enable_image_restoration: bool = False,
-                        src_image: Optional[str] = None,
                         sample_image: Optional[str] = None,) -> None:
         if isinstance(model_type, ModelType):
             model_type = model_type.value
@@ -242,13 +242,13 @@ class LivePortraitInferencer:
             raise
 
     def create_video(self,
+                     src_input: Optional[str] = None,
+                     driving_vid_path: Optional[str] = None,
                      model_type: str = ModelType.HUMAN.value,
                      retargeting_eyes: float = 1,
                      retargeting_mouth: float = 1,
                      crop_factor: float = 2.3,
                      enable_image_restoration: bool = False,
-                     src_input: Optional[str] = None,
-                     driving_vid_path: Optional[str] = None,
                      progress: gr.Progress = gr.Progress()
                      ):
         if self.pipeline is None or model_type != self.model_type:
