@@ -148,10 +148,10 @@ class App:
                             with gr.Column(scale=1):
                                 btn_openfolder = gr.Button('📂')
 
-                        params = [img_ref, vid_driven] + vid_params
+                        params = [dd_src_type, img_ref, vid_ref, vid_driven] + vid_params
 
                         btn_gen.click(
-                            fn=self.inferencer.create_video,
+                            fn=self.inferencer.create_video_gradio,
                             inputs=params,
                             outputs=vid_out
                         )

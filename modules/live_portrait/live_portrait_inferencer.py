@@ -367,6 +367,23 @@ class LivePortraitInferencer:
         except Exception as e:
             raise
 
+    def create_video_gradio(self,
+                            src_type: Optional[str] = None,
+                            src_img: Optional[str] = None,
+                            src_vid: Optional[str] = None,
+                            *args
+                            ):
+        if src_type == ReferenceType.IMAGE.value:
+            return self.create_video(
+                src_img,
+                *args,
+            )
+        elif src_type == ReferenceType.VIDEO.value:
+            return self.create_video(
+                src_vid,
+                *args,
+            )
+
     def download_if_no_models(self,
                               model_type: str = ModelType.HUMAN.value,
                               progress=gr.Progress(), ):
