@@ -2,6 +2,7 @@ import logging
 import time
 import copy
 import dill
+import numpy as np
 from ultralytics import YOLO
 import safetensors.torch
 import gradio as gr
@@ -55,6 +56,8 @@ class LivePortraitInferencer:
 
         self.mask_img = None
         self.temp_img_idx = 0
+        self.src_input = None
+        self.psi_list = None
         self.src_image = None
         self.src_image_list = None
         self.sample_image = None
@@ -163,7 +166,8 @@ class LivePortraitInferencer:
                         enable_image_restoration: bool = False,
                         sample_image: Optional[str] = None,) -> None:
         if src_input is None:
-            raise ValueError("Source input to apply facial expression is not provided. It must be image or video.")
+            print("Source input to apply facial expression is not provided. It must be image or video.")
+            return None
 
         if isinstance(model_type, ModelType):
             model_type = model_type.value
@@ -177,62 +181,83 @@ class LivePortraitInferencer:
 
         try:
             with torch.autocast(device_type=self.device, enabled=(self.device == "cuda")):
-                psi = self.prepare_source(src_input, crop_factor)
 
-                rotate_yaw = -rotate_yaw
+                is_src_image = isinstance(src_input, np.ndarray) or is_image(src_input)
+                is_src_video = isinstance(src_input, str) and is_video(src_input)
+                is_src_same = False
 
-                s_info = psi.x_s_info
-                s_exp = s_info['exp'] * src_ratio
-                s_exp[0, 5] = s_info['exp'][0, 5]
-                s_exp += s_info['kp']
+                if isinstance(src_input, str) and self.src_input == src_input:
+                    is_src_same = True
+                elif isinstance(src_input, np.ndarray) and np.array_equal(src_input, self.src_input):
+                    is_src_same = True
 
-                es = ExpressionSet()
+                if not is_src_same:
+                    self.src_input = src_input
+                    if is_src_image:
+                        self.psi_list = [self.prepare_source(src_input, crop_factor)]
+                    elif is_src_video:
+                        src_frame_dir = os.path.join(self.output_dir, "temp", "video_frames", "reference")
+                        reference_frames, vid_sound = extract_frames(src_input, src_frame_dir), extract_sound(src_input)
+                        self.psi_list = [self.prepare_source(frame, crop_factor) for frame in reference_frames]
+                        vid_info = get_video_info(vid_input=src_input)
+                    else:
+                        raise ValueError("Input must be image or video.")
 
-                if isinstance(sample_image, np.ndarray) and sample_image:
-                    if id(self.sample_image) != id(sample_image):
-                        self.sample_image = sample_image
-                        d_image_np = (sample_image * 255).byte().numpy()
-                        d_face = self.crop_face(d_image_np[0], 1.7)
-                        i_d = self.prepare_src_image(d_face)
-                        self.d_info = self.pipeline.get_kp_info(i_d)
-                        self.d_info['exp'][0, 5, 0] = 0
-                        self.d_info['exp'][0, 5, 1] = 0
+                for psi in self.psi_list:
+                    rotate_yaw = -rotate_yaw
 
-                    # "OnlyExpression", "OnlyRotation", "OnlyMouth", "OnlyEyes", "All"
-                    if sample_parts == SamplePart.ONLY_EXPRESSION.value or sample_parts == SamplePart.ONLY_EXPRESSION.ALL.value:
-                        es.e += self.d_info['exp'] * sample_ratio
-                    if sample_parts == SamplePart.ONLY_ROTATION.value or sample_parts == SamplePart.ONLY_ROTATION.ALL.value:
-                        rotate_pitch += self.d_info['pitch'] * sample_ratio
-                        rotate_yaw += self.d_info['yaw'] * sample_ratio
-                        rotate_roll += self.d_info['roll'] * sample_ratio
-                    elif sample_parts == SamplePart.ONLY_MOUTH.value:
-                        self.retargeting(es.e, self.d_info['exp'], sample_ratio, (14, 17, 19, 20))
-                    elif sample_parts == SamplePart.ONLY_EYES.value:
-                        self.retargeting(es.e, self.d_info['exp'], sample_ratio, (1, 2, 11, 13, 15, 16))
+                    s_info = psi.x_s_info
+                    s_exp = s_info['exp'] * src_ratio
+                    s_exp[0, 5] = s_info['exp'][0, 5]
+                    s_exp += s_info['kp']
 
-                es.r = self.calc_fe(es.e, blink, eyebrow, wink, pupil_x, pupil_y, aaa, eee, woo, smile,
-                                    rotate_pitch, rotate_yaw, rotate_roll)
+                    es = ExpressionSet()
 
-                new_rotate = get_rotation_matrix(s_info['pitch'] + es.r[0], s_info['yaw'] + es.r[1],
-                                                 s_info['roll'] + es.r[2])
-                x_d_new = (s_info['scale'] * (1 + es.s)) * ((s_exp + es.e) @ new_rotate) + s_info['t']
+                    if isinstance(sample_image, np.ndarray) and sample_image:
+                        if id(self.sample_image) != id(sample_image):
+                            self.sample_image = sample_image
+                            d_image_np = (sample_image * 255).byte().numpy()
+                            d_face = self.crop_face(d_image_np[0], 1.7)
+                            i_d = self.prepare_src_image(d_face)
+                            self.d_info = self.pipeline.get_kp_info(i_d)
+                            self.d_info['exp'][0, 5, 0] = 0
+                            self.d_info['exp'][0, 5, 1] = 0
 
-                x_d_new = self.pipeline.stitching(psi.x_s_user, x_d_new)
+                        # "OnlyExpression", "OnlyRotation", "OnlyMouth", "OnlyEyes", "All"
+                        if sample_parts == SamplePart.ONLY_EXPRESSION.value or sample_parts == SamplePart.ONLY_EXPRESSION.ALL.value:
+                            es.e += self.d_info['exp'] * sample_ratio
+                        if sample_parts == SamplePart.ONLY_ROTATION.value or sample_parts == SamplePart.ONLY_ROTATION.ALL.value:
+                            rotate_pitch += self.d_info['pitch'] * sample_ratio
+                            rotate_yaw += self.d_info['yaw'] * sample_ratio
+                            rotate_roll += self.d_info['roll'] * sample_ratio
+                        elif sample_parts == SamplePart.ONLY_MOUTH.value:
+                            self.retargeting(es.e, self.d_info['exp'], sample_ratio, (14, 17, 19, 20))
+                        elif sample_parts == SamplePart.ONLY_EYES.value:
+                            self.retargeting(es.e, self.d_info['exp'], sample_ratio, (1, 2, 11, 13, 15, 16))
 
-                crop_out = self.pipeline.warp_decode(psi.f_s_user, psi.x_s_user, x_d_new)
-                crop_out = self.pipeline.parse_output(crop_out['out'])[0]
+                    es.r = self.calc_fe(es.e, blink, eyebrow, wink, pupil_x, pupil_y, aaa, eee, woo, smile,
+                                        rotate_pitch, rotate_yaw, rotate_roll)
 
-                crop_with_fullsize = cv2.warpAffine(crop_out, psi.crop_trans_m, get_rgb_size(psi.src_rgb), cv2.INTER_LINEAR)
-                out = np.clip(psi.mask_ori * crop_with_fullsize + (1 - psi.mask_ori) * psi.src_rgb, 0, 255).astype(np.uint8)
+                    new_rotate = get_rotation_matrix(s_info['pitch'] + es.r[0], s_info['yaw'] + es.r[1],
+                                                     s_info['roll'] + es.r[2])
+                    x_d_new = (s_info['scale'] * (1 + es.s)) * ((s_exp + es.e) @ new_rotate) + s_info['t']
 
-                temp_out_img_path, out_img_path = get_auto_incremental_file_path(TEMP_DIR, "png"), get_auto_incremental_file_path(OUTPUTS_DIR, "png")
-                cropped_out_img_path = save_image(numpy_array=crop_out, output_path=temp_out_img_path)
-                out_img_path = save_image(numpy_array=out, output_path=out_img_path)
+                    x_d_new = self.pipeline.stitching(psi.x_s_user, x_d_new)
 
-                if enable_image_restoration:
-                    out = self.resrgan_inferencer.restore_image(out_img_path)
+                    crop_out = self.pipeline.warp_decode(psi.f_s_user, psi.x_s_user, x_d_new)
+                    crop_out = self.pipeline.parse_output(crop_out['out'])[0]
 
-                return out
+                    crop_with_fullsize = cv2.warpAffine(crop_out, psi.crop_trans_m, get_rgb_size(psi.src_rgb), cv2.INTER_LINEAR)
+                    out = np.clip(psi.mask_ori * crop_with_fullsize + (1 - psi.mask_ori) * psi.src_rgb, 0, 255).astype(np.uint8)
+
+                    temp_out_img_path, out_img_path = get_auto_incremental_file_path(TEMP_DIR, "png"), get_auto_incremental_file_path(OUTPUTS_DIR, "png")
+                    cropped_out_img_path = save_image(numpy_array=crop_out, output_path=temp_out_img_path)
+                    out_img_path = save_image(numpy_array=out, output_path=out_img_path)
+
+                    if enable_image_restoration:
+                        out = self.resrgan_inferencer.restore_image(out_img_path)
+
+                    return out
         except Exception as e:
             raise
 
@@ -628,9 +653,6 @@ class LivePortraitInferencer:
         return face_img
 
     def prepare_source(self, source_image, crop_factor, is_video=False, tracking=False):
-        # source_image_np = (source_image * 255).byte().numpy()
-        # img_rgb = source_image_np[0]
-        # print("Prepare source...")
         if isinstance(source_image, str):
             source_image = image_path_to_array(source_image)
 
