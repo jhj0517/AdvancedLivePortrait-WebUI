@@ -195,11 +195,16 @@ class LivePortraitInferencer:
                     self.src_input = src_input
                     if is_src_image:
                         self.psi_list = [self.prepare_source(src_input, crop_factor)]
+                        out_img_path = get_auto_incremental_file_path(self.output_dir, "png")
                     elif is_src_video:
                         src_frame_dir = os.path.join(self.output_dir, "temp", "video_frames", "reference")
                         reference_frames, vid_sound = extract_frames(src_input, src_frame_dir), extract_sound(src_input)
                         self.psi_list = [self.prepare_source(frame, crop_factor) for frame in reference_frames]
                         vid_info = get_video_info(vid_input=src_input)
+                        out_img_path = get_auto_incremental_file_path(
+                            os.path.join(self.output_dir, "temp", "video_frames", "out"),
+                            "png"
+                        )
                     else:
                         raise ValueError("Input must be image or video.")
 
@@ -250,14 +255,25 @@ class LivePortraitInferencer:
                     crop_with_fullsize = cv2.warpAffine(crop_out, psi.crop_trans_m, get_rgb_size(psi.src_rgb), cv2.INTER_LINEAR)
                     out = np.clip(psi.mask_ori * crop_with_fullsize + (1 - psi.mask_ori) * psi.src_rgb, 0, 255).astype(np.uint8)
 
-                    temp_out_img_path, out_img_path = get_auto_incremental_file_path(TEMP_DIR, "png"), get_auto_incremental_file_path(OUTPUTS_DIR, "png")
+                    temp_out_img_path = get_auto_incremental_file_path(os.path.join(self.output_dir, "temp"), "png")
+
                     cropped_out_img_path = save_image(numpy_array=crop_out, output_path=temp_out_img_path)
                     out_img_path = save_image(numpy_array=out, output_path=out_img_path)
 
                     if enable_image_restoration:
-                        out = self.resrgan_inferencer.restore_image(out_img_path)
+                        out_img_path = self.resrgan_inferencer.restore_image(out_img_path)
 
-                    return out
+                if is_src_image:
+                    return out_img_path
+                else:
+                    out_frame_dir = os.path.join(self.output_dir, "temp", "video_frames", "out")
+                    out_video_path = create_video_from_frames(
+                        out_frame_dir,
+                        frame_rate=vid_info.frame_rate,
+                        output_dir=os.path.join(self.output_dir, "videos")
+                    )
+                    return out_video_path
+
         except Exception as e:
             raise
 
