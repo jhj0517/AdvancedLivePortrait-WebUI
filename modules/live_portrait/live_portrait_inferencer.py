@@ -186,6 +186,14 @@ class LivePortraitInferencer:
                 is_src_video = isinstance(src_input, str) and is_video(src_input)
                 is_src_same = False
 
+                if is_src_image:
+                    out_img_path = get_auto_incremental_file_path(self.output_dir, "png")
+                elif is_src_video:
+                    out_img_path = get_auto_incremental_file_path(
+                        os.path.join(self.output_dir, "temp", "video_frames", "out"),
+                        "png"
+                    )
+
                 if isinstance(src_input, str) and self.src_input == src_input:
                     is_src_same = True
                 elif isinstance(src_input, np.ndarray) and np.array_equal(src_input, self.src_input):
@@ -195,16 +203,11 @@ class LivePortraitInferencer:
                     self.src_input = src_input
                     if is_src_image:
                         self.psi_list = [self.prepare_source(src_input, crop_factor)]
-                        out_img_path = get_auto_incremental_file_path(self.output_dir, "png")
                     elif is_src_video:
                         src_frame_dir = os.path.join(self.output_dir, "temp", "video_frames", "reference")
                         reference_frames, vid_sound = extract_frames(src_input, src_frame_dir), extract_sound(src_input)
                         self.psi_list = [self.prepare_source(frame, crop_factor) for frame in reference_frames]
                         vid_info = get_video_info(vid_input=src_input)
-                        out_img_path = get_auto_incremental_file_path(
-                            os.path.join(self.output_dir, "temp", "video_frames", "out"),
-                            "png"
-                        )
                     else:
                         raise ValueError("Input must be image or video.")
 
