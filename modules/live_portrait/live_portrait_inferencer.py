@@ -274,7 +274,7 @@ class LivePortraitInferencer:
             )
 
         try:
-            if src_input is None or driving_vid_path is None:
+            if not src_input or not driving_vid_path:
                 raise ValueError("Driving expression video and source input to apply facial expression is not provided.")
             src_frame_dir, driving_frame_dir = os.path.join(self.output_dir, "temp", "video_frames", "reference"), os.path.join(self.output_dir, "temp", "video_frames")
 
