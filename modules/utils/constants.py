@@ -15,6 +15,11 @@ class SamplePart(Enum):
     ALL = _("All")
 
 
+class ReferenceType(Enum):
+    IMAGE = _("Image")
+    VIDEO = _("Video")
+
+
 REPO_MARKDOWN = """
 ## [AdvancedLivePortrait-WebUI](https://github.com/jhj0517/AdvancedLivePortrait-WebUI/tree/master)
 """

@@ -9,11 +9,6 @@ from modules.utils.helper import str2bool
 from modules.utils.constants import *
 
 
-class ReferenceType(Enum):
-    IMAGE = _("Image")
-    VIDEO = _("Video")
-
-
 class App:
     def __init__(self,
                  args=None):
