@@ -7,10 +7,10 @@ services:
 
     volumes:
       # Update paths to mount models and output paths to your custom paths like this, e.g:
-      # - C:/your-local-path/AdvancedLivePortrait-WebUI/models:/AdvancedLivePortrait-WebUI/models
-      # - C:/your-local-path/AdvancedLivePortrait-WebUI/outputs:/AdvancedLivePortrait-WebUI/outputs
-      - /AdvancedLivePortrait-WebUI/models
-      - /AdvancedLivePortrait-WebUI/outputs
+      # - /local/paths/models:/AdvancedLivePortrait-WebUI/models
+      # - /local/paths/outputs:/AdvancedLivePortrait-WebUI/outputs
+      - ../models:/AdvancedLivePortrait-WebUI/models
+      - ../outputs:/AdvancedLivePortrait-WebUI/outputs
 
     ports:
       - "7860:7860"
